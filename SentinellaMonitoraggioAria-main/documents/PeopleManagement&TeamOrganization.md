@@ -1,0 +1,8 @@
+# :construction_worker: People Management and Team Organization
+La struttura organizzativa del team, come già accennato nel <code>[Project Plan](ProjectPlan.pdf)</code>, sarà di tipo semplice (**Simple Structure**, _Mintzberg coordintion mechanisms_); ovvero una struttura dove uno (o pochi più) manager coordinano un core di 3/4 persone.
+
+Questa struttura, infatti, è quella che meglio si adatta al nostro caso, in cui il team ha, in realtà, una forma degenere, essendo costituito solamente da una persona che risponderà direttamente al committente. Il coordinamento è, conseguentemente, realizzato tramite supervisione diretta del lavoro da parte dell'unico componente del gruppo.
+
+Il team è organizzato secondo un modello gerarchico. Le attività principali da svolgere vengono suddivise in sotto-attività da intraprendere una per una in maniera progressiva, controllate, ovviamente, in maniera diretta da chi le svolge. Per quanto riguarda, invece, la programmazione, il fine settimana, si fissano delle riunioni formali con il cliente in cui, dopo aver valutato il lavoro svolto, si procede con la definizione delle future attività da sviluppare nei 7 giorni succesivi.
+
+Un possibile vantaggio di questa tipologia di organizzazione, data la struttura degenere del team alla quale viene applicata, può essere un coinvolgimento più globale del cliente, il quale, data l'assenza di veri e propri superiori, può essere "sfruttato" come tale, e, quindi, rappresentare un punto di confronto rispetto a ciò che si sta producendo. In questo modo si realizza uno dei punti fondamentali espressi nel documento di <code>[Software Life Cycle](SoftwareLifeCycle.md)</code> su cui si basa sia il seguente progetto, che anche tutto il movimento AGILE.
