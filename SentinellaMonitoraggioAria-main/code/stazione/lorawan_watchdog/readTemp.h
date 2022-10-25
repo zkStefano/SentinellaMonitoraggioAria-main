@@ -13,7 +13,7 @@ DHT dht = DHT(dataPinTU, DHTType); // creazione oggetto per la gestione del sens
 // DHT22 (Temperatura):
 float readTemp(){
   dht.begin();
-  Serial.println("Rilevamento temperatura, attendi 2s");
+  Serial.println(" DHT22 => Detecting temperature... ");
   
   delay(2000); // si può sondare il DHT22 per nuove informazioni ogni due secondi
 

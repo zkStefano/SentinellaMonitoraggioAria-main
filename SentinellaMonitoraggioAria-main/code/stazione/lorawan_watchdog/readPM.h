@@ -20,7 +20,7 @@ float concentration = 0;
 // Grove Dust Sensor PM10:
 float readPM(){
   pinMode(dataPinPM,INPUT);
-  Serial.println("Rilevamento concentrazione PM10");
+  Serial.println(" Groove Dust Sensor => Detecting concentration of PM10");
   starttime = millis(); // ottieni il tempo/orario corrente, millis() ritorna il numero di millisecondi dall'avvio del programma;
   while((millis()-starttime) < sampletime_ms){
   duration = pulseIn(dataPinPM, LOW); // pulseIn() legge un impulso (sia di tipo HIGH oppure LOW) su un pin;

@@ -18,7 +18,7 @@ float readAmmoniaca(){
   float VRL; // caduta di tensione su RL
   float Rs; // valore di resistenza del resistore ad una determinata concentrazione di gas 
   float ratio; // variabile per il rapporto Rs/Ro
-  Serial.println("Rilevamento concentrazione ammoniaca, attendi");
+  Serial.println(" MQ137 => Detecting ammonia concentration.. ");
 
   for(int i = 1 ; i <= 500 ; i++){ // lettura dell'uscita analogica del sensore per 500 volte
     analog_value = analog_value + analogRead(dataPinA); // somma dei valori anologici letti

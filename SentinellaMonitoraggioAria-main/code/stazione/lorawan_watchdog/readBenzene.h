@@ -21,7 +21,7 @@ float readBenzene(){
   // OSS: il miglior modo per fare tutt ciò è fare una media di letture multiple per combattere il rumore dell'ADC.
   // Terminato il processo di calibrazione, dovremo solo passare il valore di rzero al costruttore in questo modo:
   //MQ135 mq135_sensor(PIN_MQ135, rzero);
-  Serial.println("Rilevamento concentrazione benzene, attendi");
+  Serial.println(" MQ135 => Detecting benzene concentration.. ");
 
 
   float correctionFactor = mq135_sensor.getCorrectionFactor(temperature, humidity);

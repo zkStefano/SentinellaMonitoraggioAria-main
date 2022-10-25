@@ -43,6 +43,7 @@ String statoO = "0";
 String statoB = "0";
 String statoA = "0";
 String statoAL = "0";
+String calibraOz = true;
 
 /* dichiarazione funzioni e procedure */
 
@@ -95,7 +96,11 @@ String read_data_from_sensor() // era String
   }
 
   if(activeO){
-    statoO = String(readOzono(), 3);
+    if(calibraOz){
+      statoO = String(readOzono(calibraOz), 3); //calibratura solo la prima volta..
+      calibraOz = false; 
+    }
+    statoO = String(readOzono(calibraOz), 3);
   }
   
   if(activeB){
@@ -111,7 +116,6 @@ String read_data_from_sensor() // era String
   }
 
   String msg = "Temperatura:" + statoT + "°C " + "Umidità:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozono:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammoniaca:" + statoA + "ppm " + "Aldeidi:" + statoAL + "ppm";
-
   return msg;
 }
 

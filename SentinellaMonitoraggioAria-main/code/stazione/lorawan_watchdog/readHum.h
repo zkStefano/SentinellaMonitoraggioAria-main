@@ -12,7 +12,7 @@
 // DHT22 (Umidità):
 float readHum(){
   dht.begin();
-  Serial.println("Rilevamento umidità, attendi 2s");
+  Serial.println(" DH22 => Detecting Humidity.. ");
 
   
   delay(2000); // si può sondare il DHT22 per nuove informazioni ogni due secondi

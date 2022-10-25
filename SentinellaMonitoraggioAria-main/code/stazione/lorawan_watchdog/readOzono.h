@@ -7,7 +7,7 @@
 #define dataPinO A0
 
 // MQ131:
-float readOzono(){
+float readOzono(bool calibra){
   // MQ131:
   // Inizializza/avvia il sensore (necessari i 4 parametri)
   // Controllo (della potenza del) riscaldatore (resistenza) sul pin 2
@@ -16,15 +16,17 @@ float readOzono(){
                                // Quando è presente dell'Ozono, la conduttività del materale diminuisce all'aumentare della concentrazione del gas. Il funzionamento si basa, dunque, sulla conversione
                                // della variazione di conduttività in concentrazione del gas tramite un segnale di uscita. (Per questo si utilizza il modello di sensore LOW_CONCENTRATION) 
   // Resistenza di carico RL di 1MOhms (1000000 Ohms)
-  MQ131.begin(2, dataPinO, LOW_CONCENTRATION, 1000000);
+  
+  MQ131.begin(2, dataPinO, LOW_CONCENTRATION, 1000000); //MODIFICA: FORSE QUESTA è DA METTERE ALL'INTERNO DELLA GUARDIA...
 
   // Prima di usare il sensore è meglio calibrarlo; la calibrazione è "buona pratica" farla avvenire a 20°C e 65% di umidità in aria pulita.
+  if (calibra){
   Serial.println("Calibration MQ131 in progress...");
-  
   MQ131.calibrate();
-  
   Serial.println("Calibration done!");
-  Serial.println("Rilevamento concentrazione di ozono, attendi");
+  }
+
+  Serial.println(" MQ131 => Detecting ozone concentration... ");
 
   // La calibrazione "aggiusta" 2 parametri successivi: il valore di R0 (resistenza di base) e il tempo necessario per riscaldare il sensore e ottenere lettre coerenti e affidabili
   /*Serial.print("R0 = ");
