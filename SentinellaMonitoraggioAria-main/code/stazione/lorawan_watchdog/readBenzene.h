@@ -10,9 +10,9 @@
 MQ135 mq135_sensor(dataPinB);
 
 // MQ135:
-float readBenzene(){
-  float temperature = readTemp(); // rileva la temperatura corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
-  float humidity = readHum(); // rileva l'umidità corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
+float readBenzene(float Temp, float Hum){
+  //float temperature = readTemp(); // rileva la temperatura corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
+  //float humidity = readHum(); // rileva l'umidità corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
   // Per un corretto utilizzo ed una accurata lettura della concentrazione è importante caibrare il sensore.
   // Per fare ciò è necessario posizionare il sensore all'esterno, in un luogo in cui vi sia abbastanza aria pulita/fresca (idealmente una temperatura di 20°C con un 33% di umidità, in accordo con il datasheet), lasciarlo alimentato
   // per 12-24 ore così da "bruciarlo" e stabilizzarlo.
@@ -24,14 +24,15 @@ float readBenzene(){
   Serial.println(" MQ135 => Detecting benzene concentration.. ");
 
 
-  float correctionFactor = mq135_sensor.getCorrectionFactor(temperature, humidity);
+  //Change the values between parenthesis in the following section with the values passed as parametres.
+  float correctionFactor = mq135_sensor.getCorrectionFactor(Temp, Hum);
   float rload = mq135_sensor.getResistance();
-  float correctedRLoad = mq135_sensor.getCorrectedResistance(temperature, humidity);
+  float correctedRLoad = mq135_sensor.getCorrectedResistance(Temp, Hum);
   float rzero = mq135_sensor.getRZero();
-  float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+  float correctedRZero = mq135_sensor.getCorrectedRZero(Temp, Hum);
   float resistance = mq135_sensor.getResistance();
   float ppm = mq135_sensor.getPPM();
-  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+  float correctedPPM = mq135_sensor.getCorrectedPPM(Temp, Hum);
 
   delay(2000);
   return correctedPPM;

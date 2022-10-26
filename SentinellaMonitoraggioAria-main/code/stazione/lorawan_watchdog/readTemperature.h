@@ -1,24 +1,21 @@
-#ifndef readTemp_h
-#define readTemp_h
+#ifndef readTemperature_h
+#define readTemperature_h
 
-#include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
-#include <DHT.h> // libreria necessaria per il funzionamento del sensore di temperatura (e umidità) DHT22
+#include <Arduino.h>
+#include <DHT.h> 
 
-#define dataPinTU 1 // pin collegato di Arduino (teperatura-umidità) 
-#define DHTType DHT22 // definizione modello di sensore (temperatura-umidità)
+#define dataPinTU 1 // pin connected to the Arduino board
+#define DHTType DHT22 // defining sensor model (type of it)
 
 // DHT22:
-DHT dht = DHT(dataPinTU, DHTType); // creazione oggetto per la gestione del sensore
+DHT dht = DHT(dataPinTU, DHTType); //create the sensor object
 
-// DHT22 (Temperatura):
+// DHT22 (Temp):
 float readTemp(){
   dht.begin();
   Serial.println(" DHT22 => Detecting temperature... ");
-  
-  delay(2000); // si può sondare il DHT22 per nuove informazioni ogni due secondi
-
-  float t = dht.readTemperature(); // lettura della temperatura
-    
+  delay(2000); //refresh rate is 2 sec.
+  float t = dht.readTemperature(); 
   return t;
 }
 

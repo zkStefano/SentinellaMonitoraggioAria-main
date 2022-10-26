@@ -1,13 +1,13 @@
-#ifndef funzioni_h
-#define funzioni_h
+#ifndef functions_h
+#define functions_h
 
-#include "readTemp.h"
-#include "readHum.h"
+#include "readTemperature.h"
+#include "readHumidity.h"
 #include "readPM.h"
-#include "readOzono.h"
+#include "readOzone.h"
 #include "readBenzene.h"
-#include "readAmmoniaca.h"
-#include "readAldeidi.h"
+#include "readAmmonia.h"
+#include "readAldehydes.h"
 
 #include <DHT.h>
 #include <MQ131.h>
@@ -43,7 +43,7 @@ String statoO = "0";
 String statoB = "0";
 String statoA = "0";
 String statoAL = "0";
-String calibraOz = true;
+String calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. 
 
 /* dichiarazione funzioni e procedure */
 
@@ -83,16 +83,22 @@ void message_sent_error();
 // lettura dati dal sensore
 String read_data_from_sensor() // era String
 {
+
+  float tempValues = []; //tempValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
+                         //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
+
   if(activePM){
     statoPM = String(readPM(), 3);
   }
   
   if(activeT){
     statoT = String(readTemp(), 3); 
+    tempValues[0] = statoT;
   }
 
   if(activeH){
     statoH = String(readHum(), 3);
+    tempValues[1] = statoH;
   }
 
   if(activeO){
@@ -100,11 +106,11 @@ String read_data_from_sensor() // era String
       statoO = String(readOzono(calibrateO), 3); //calibratura solo la prima volta..
       calibrateO = false; 
     }
-    statoO = String(readOzono(calibraOz), 3);
+    statoO = String(readOzono(calibrateO), 3);
   }
   
   if(activeB){
-    statoB = String(readBenzene(), 3);
+    statoB = String(readBenzene(tempValues[0],tempValues[1]), 3); //NEED TO TEST IT.. if doesn't work initialize the array with some values 
   }
 
   if(activeA){
@@ -162,6 +168,8 @@ String exchange_data_with_gateway()
   return rcv;
 }
 
+
+
 // analizza conf_data e assegna ogni valore contunuto 
 // nella stringa alla relativa variabile globale
 void set_conf_data(String cd)
@@ -214,6 +222,17 @@ void set_conf_data(String cd)
   // fine while
 }
 
+// analizza conf_data e assegna ogni valore contunuto 
+// NEW VERSION
+void set_conf_data_SIM(String data)
+{
+ 
+}
+  
+
+
+
+
 // messaggio di errore inizializzazione libreria e modulo MKRWAN
 void modem_start_err()
 {
@@ -254,7 +273,11 @@ void message_sent_error()
 
 
 
-/*
+/* IDEAS AND FUTURE IMPLEMENTATIONS 
+
+Avoid duplicate read of Temp and Humidity Sensor.
+
+
 WE NEED A BATTERY TO MAKE ARDUINO INDEPENDENT .
 https://www.instructables.com/Powering-Arduino-with-a-Battery/
 

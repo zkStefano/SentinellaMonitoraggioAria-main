@@ -1,5 +1,5 @@
-#ifndef readOzono_h
-#define readOzono_h
+#ifndef readOzone_h
+#define readOzone_h
 
 #include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
 #include <MQ131.h>

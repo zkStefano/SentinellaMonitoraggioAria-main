@@ -7,13 +7,13 @@
 // Inclusione moduli arduino_secrets.h, functions.h e dei moduli per la gestione dei sensori
 #include "arduino_secrets.h"
 #include "functions.h"
-#include "readTemp.h"
-#include "readHum.h"
+#include "readTemperature.h"
+#include "readHumidity.h"
 #include "readPM.h"
-#include "readOzono.h"
+#include "readOzone.h"
 #include "readBenzene.h"
-#include "readAmmoniaca.h"
-#include "readAldeidi.h"
+#include "readAmmonia.h"
+#include "readAldehydes.h"
 
 // Dichiarazione di modem
 LoRaModem modem;
@@ -152,7 +152,34 @@ void loop() {
     previousMillisS = currentMillis;
   }
   
-  //DOWNLINK DATA
+
+
+
+  //DOWNLINK DATA Simulated (Using https://www.c-sharpcorner.com/article/reading-input-from-serial-monitor-in-arduino/)
+  if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive )
+  { 
+    ///// GETTING conf_data VIA CONSOLE (SIMULATING IT)  
+    Serial.println("Set the conf_data parametres");  
+    while (Serial.available() == 0)   
+    { //Wait for user input  }       //WANT TO HAVE [1,1,1,1,1,1,0,23400,53000]
+    conf_data = Serial.readString(); 
+    
+    ///CHECK
+    if(conf_data != "")
+    {
+      // Associazione dei parametri di riconfigurazione 
+      // presenti in conf_data alle relative variabili globali
+      set_conf_data(conf_data);
+    }
+
+    // Eguaglio previousMillisR (controllo ricezione) con currentMillis
+    // per gestire il rollover di millis()
+    previousMillisR = currentMillis;
+  }
+
+
+
+  //DOWNLINK DATA Original
   if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive )
   { 
     // Ottengo conf_data

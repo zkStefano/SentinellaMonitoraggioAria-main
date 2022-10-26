@@ -1,9 +1,9 @@
-#ifndef readAldeidi_h
-#define readAldeidi_h
+#ifndef readAldehydes_h
+#define readAldehydes_h
 
-#include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
+#include <Arduino.h> 
 
-#define dataPinA A3 // pin analogico a cui è connesso il sensore
+#define dataPinA A3 // pin connected to the Arduino board
 
 #define RL 20  // il valore sdel resistore RL è 47 kohm
 #define M -0.447 // il valore del coefficiente angolare calcolato. (Dava un problema con 'm' minuscola, non so il perchè)

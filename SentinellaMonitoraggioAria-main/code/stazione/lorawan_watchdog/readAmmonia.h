@@ -1,11 +1,11 @@
-#ifndef readAmmoniaca_h
-#define readAmmoniaca_h
+#ifndef readAmmonia_h
+#define readAmmonia_h
 
-#include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
+#include <Arduino.h> // 
 
-#define dataPinA A1 // pin analogico a cui è connesso il sensore
+#define dataPinA A1 // pin connected to the Arduino Board
 
-#define RL 47  // il valore sdel resistore RL è 47 kohm
+#define RL 47  // Resistance of RL is 47 kohm
 #define M -0.263 // il valore del coefficiente angolare calcolato. (Dava un problema con 'm' minuscola, non so il perchè)
                  // Punti: (x1;y1) e (x2;y2) --> (40;1) e (100;0.8) 
 #define b 0.42 // il valore dell'intercetta calcolato.
