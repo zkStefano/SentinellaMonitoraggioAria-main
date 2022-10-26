@@ -96,9 +96,9 @@ String read_data_from_sensor() // era String
   }
 
   if(activeO){
-    if(calibraOz){
-      statoO = String(readOzono(calibraOz), 3); //calibratura solo la prima volta..
-      calibraOz = false; 
+    if(calibrateO){
+      statoO = String(readOzono(calibrateO), 3); //calibratura solo la prima volta..
+      calibrateO = false; 
     }
     statoO = String(readOzono(calibraOz), 3);
   }
@@ -115,7 +115,7 @@ String read_data_from_sensor() // era String
    statoAL = String(readAldeidi(), 3); 
   }
 
-  String msg = "Temperatura:" + statoT + "°C " + "Umidità:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozono:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammoniaca:" + statoA + "ppm " + "Aldeidi:" + statoAL + "ppm";
+  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammoniaca:" + statoA + "ppm " + "Aldeidi:" + statoAL + "ppm";
   return msg;
 }
 
@@ -223,9 +223,9 @@ void modem_start_err()
 // messaggi di info modem(modem version, modem deviceEUI)
 void info_modem()
 {
-  Serial.print("La versione del tuo modulo è: ");
+  Serial.print("Your module version is: ");
   Serial.println(modem.version());
-  Serial.print("L' EUI del tuo dispositivo è: ");
+  Serial.print("EUI code of your device is: ");
   Serial.println(modem.deviceEUI());
 }
 
@@ -250,3 +250,20 @@ void message_sent_error()
 }
 
 #endif
+
+
+
+
+/*
+WE NEED A BATTERY TO MAKE ARDUINO INDEPENDENT .
+https://www.instructables.com/Powering-Arduino-with-a-Battery/
+
+CHECK BATTERY LEVEL:
+https://forum.arduino.cc/t/battery-level-check-using-arduino/424054/3
+https://forum.arduino.cc/t/measuring-the-battery-voltage-using-the-adc-on-mini-3v3-8mhz/422944
+
+
+SIGNAL POWER:
+https://forum.arduino.cc/t/reading-rf-signal-strength/576273/13
+
+*/

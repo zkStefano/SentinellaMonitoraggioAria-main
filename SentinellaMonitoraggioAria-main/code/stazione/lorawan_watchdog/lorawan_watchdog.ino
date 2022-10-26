@@ -31,14 +31,16 @@ unsigned long previousMillisR;
 
 // VARIABILI PER LA RICONFIGURAZIONE
 // Dichiarazione di conf_data
-String conf_data;
+String conf_data; //stringacomandi (DA GATEWAY) [(timetosend,30000),(..,..)]
+
+//Period
 // Dichiarazione di timetosend
 int timetosend;
 // Dichiarazione di timetoreceive
 int timetoreceive;
 
-// VARIABILI ATTIVAZIONE/DISATTIVAZIONE SENSORI
-// Sensore Temperatura
+//Flags
+// Temperature Sensor
 bool activeT;
 // Sensore Umidità
 bool activeH;
@@ -52,6 +54,9 @@ bool activeB;
 bool activeA;
 // Sensore Aldeidi
 bool activeAL;
+
+//Other Variables
+int cycle = 1; 
 
 // SETUP:
 void setup() {
@@ -106,6 +111,8 @@ void setup() {
   // questo è impostato dal firmware e non può essere modificato.
   Serial.println();
  */  
+
+Serial.println();
 }
 
 // LOOP:
@@ -113,13 +120,16 @@ void loop() {
 
   // Assegnazione variabile currentMillis
   currentMillis = millis();
-
+  Serial.println("----------------- CYCLE " + cycle + " ----------------------------");
   // UPLINK DATA
   if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
   {
     // Lettura dati dal sensore
     // Stringa con i dati da trasmettere al gateway
     String msg = read_data_from_sensor();
+    /*LETTURA STRINGA CONF_DATA input,
+    se CONF_DATA
+    */
     Serial.println(msg);
   }
 /*
@@ -160,4 +170,8 @@ void loop() {
     previousMillisR = currentMillis;
   }
 */     
+
+  cycle++;
+  Serial.prinln();
+  Serial.println();
 }

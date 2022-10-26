@@ -7,7 +7,7 @@
 #define dataPinO A0
 
 // MQ131:
-float readOzono(bool calibra){
+float readOzono(bool calibrate){
   // MQ131:
   // Inizializza/avvia il sensore (necessari i 4 parametri)
   // Controllo (della potenza del) riscaldatore (resistenza) sul pin 2
@@ -20,7 +20,7 @@ float readOzono(bool calibra){
   MQ131.begin(2, dataPinO, LOW_CONCENTRATION, 1000000); //MODIFICA: FORSE QUESTA è DA METTERE ALL'INTERNO DELLA GUARDIA...
 
   // Prima di usare il sensore è meglio calibrarlo; la calibrazione è "buona pratica" farla avvenire a 20°C e 65% di umidità in aria pulita.
-  if (calibra){
+  if (calibrate){
   Serial.println("Calibration MQ131 in progress...");
   MQ131.calibrate();
   Serial.println("Calibration done!");
