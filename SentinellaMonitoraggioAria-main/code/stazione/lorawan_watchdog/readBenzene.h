@@ -21,7 +21,7 @@ float readBenzene(float Temp, float Hum){
   // OSS: il miglior modo per fare tutt ciò è fare una media di letture multiple per combattere il rumore dell'ADC.
   // Terminato il processo di calibrazione, dovremo solo passare il valore di rzero al costruttore in questo modo:
   //MQ135 mq135_sensor(PIN_MQ135, rzero);
-  Serial.println(" MQ135 => Detecting benzene concentration.. ");
+  Serial.println("MQ135 => Detecting benzene concentration.. ");
 
 
   //Change the values between parenthesis in the following section with the values passed as parametres.

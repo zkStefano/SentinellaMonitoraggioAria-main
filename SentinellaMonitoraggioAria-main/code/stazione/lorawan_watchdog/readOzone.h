@@ -26,7 +26,7 @@ float readOzono(bool calibrate){
   Serial.println("Calibration done!");
   }
 
-  Serial.println(" MQ131 => Detecting ozone concentration... ");
+  Serial.println("MQ131 => Detecting ozone concentration.. ");
 
   // La calibrazione "aggiusta" 2 parametri successivi: il valore di R0 (resistenza di base) e il tempo necessario per riscaldare il sensore e ottenere lettre coerenti e affidabili
   /*Serial.print("R0 = ");

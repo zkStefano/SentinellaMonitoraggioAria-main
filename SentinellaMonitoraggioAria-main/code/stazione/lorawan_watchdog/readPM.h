@@ -19,7 +19,7 @@ float concentration = 0;
 float readPM(){
 
   pinMode(dataPinPM,INPUT);
-  Serial.println(" Groove Dust Sensor => Detecting concentration of PM10");
+  Serial.println("Groove Dust Sensor => Detecting PM10 concentration..");
   starttime = millis(); //millis() get current time. We associate this value to starttime() to check the delta time elapsed in the while structure.
   while((millis()-starttime) < sampletime_ms){
   duration = pulseIn(dataPinPM, LOW); // pulseIn() legge un impulso (sia di tipo HIGH oppure LOW) su un pin;

@@ -14,7 +14,7 @@
 
 float readHum(){
   dht.begin();
-  Serial.println(" DH22 => Detecting Humidity.. ");
+  Serial.println("DHT22 => Detecting Humidity.. ");
   delay(2000); //refresh rate is 2 sec.
   float h = dht.readHumidity(); 
   return h;

@@ -43,7 +43,8 @@ String statoO = "0";
 String statoB = "0";
 String statoA = "0";
 String statoAL = "0";
-String calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. 
+//bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (CALIBRAZIONE 1 VOLTA)
+bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SALTO CALIBRAZIONE)
 
 /* dichiarazione funzioni e procedure */
 
@@ -84,8 +85,9 @@ void message_sent_error();
 String read_data_from_sensor() // era String
 {
 
-  float tempValues = []; //tempValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
+  float tempValues[2] = {0.00,0.00}; //tempValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
                          //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
+                         //We only need a two values array, we initialize it at (0,00;0,00)
 
   if(activePM){
     statoPM = String(readPM(), 3);
@@ -93,12 +95,12 @@ String read_data_from_sensor() // era String
   
   if(activeT){
     statoT = String(readTemp(), 3); 
-    tempValues[0] = statoT;
+    tempValues[0] = statoT.toFloat();
   }
 
   if(activeH){
     statoH = String(readHum(), 3);
-    tempValues[1] = statoH;
+    tempValues[1] = statoH.toFloat();
   }
 
   if(activeO){
@@ -121,7 +123,7 @@ String read_data_from_sensor() // era String
    statoAL = String(readAldeidi(), 3); 
   }
 
-  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammoniaca:" + statoA + "ppm " + "Aldeidi:" + statoAL + "ppm";
+  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoA + "ppm " + "Aldehydes:" + statoAL + "ppm";
   return msg;
 }
 
@@ -274,6 +276,8 @@ void message_sent_error()
 
 
 /* IDEAS AND FUTURE IMPLEMENTATIONS 
+
+ARRAY: https://stackoverflow.com/questions/16647702/how-to-use-float-in-an-array-in-c
 
 Avoid duplicate read of Temp and Humidity Sensor.
 

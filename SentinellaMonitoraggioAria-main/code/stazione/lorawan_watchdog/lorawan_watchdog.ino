@@ -120,17 +120,21 @@ void loop() {
 
   // Assegnazione variabile currentMillis
   currentMillis = millis();
-  Serial.println("----------------- CYCLE " + cycle + " ----------------------------");
+  
   // UPLINK DATA
   if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
   {
     // Lettura dati dal sensore
     // Stringa con i dati da trasmettere al gateway
+    Serial.println("----------------- CYCLE => " + String(cycle) );
     String msg = read_data_from_sensor();
     /*LETTURA STRINGA CONF_DATA input,
     se CONF_DATA
     */
     Serial.println(msg);
+    cycle++;
+    Serial.println();
+    Serial.println();
   }
 /*
   // invio dati al gateway
@@ -197,8 +201,4 @@ void loop() {
     previousMillisR = currentMillis;
   }
 */     
-
-  cycle++;
-  Serial.prinln();
-  Serial.println();
 }
