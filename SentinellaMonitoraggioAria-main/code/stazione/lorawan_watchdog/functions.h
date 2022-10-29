@@ -13,7 +13,10 @@
 #include <MQ131.h>
 #include <MQ135.h>
 
-/* dichiarazione variabili esterne */
+
+
+/* EXTERN VARIABLES */
+
 // modem
 extern LoRaModem modem;
 // timetosend (param1)
@@ -34,8 +37,12 @@ extern bool activeB;
 extern bool activeA;
 // activeAL (param3)
 extern bool activeAL;
+// activeGPS ((ADDED))
+extern bool activeGPS;
 
-/* Dichiarazione variabili */
+
+
+/* Variables */
 String statoT = "0";
 String statoH = "0";
 String statoPM = "0";
@@ -43,51 +50,55 @@ String statoO = "0";
 String statoB = "0";
 String statoA = "0";
 String statoAL = "0";
-//bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (CALIBRAZIONE 1 VOLTA)
-bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SALTO CALIBRAZIONE)
+String statoGPS = "0"; //((ADDED))
+//bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (1 Time Calibration)
+bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SKIP CALIBRATION)
 
-/* dichiarazione funzioni e procedure */
 
-// lettura dati dal sensore
+
+/* Functions Declarations */ 
+//CAN WE REMOVE THE COMMENTS HERE?
+// Read all the active sensor data and get an output string.
 String read_data_from_sensor();
 
-// invio dati al gateway
+// Transfer data acquired to gateway
 int send_data_to_gateway(String msg);
 
-// connessione con il gateway
+// Connect to gateway
 int connect_to_gateway(String ae, String ak);
 
-// ottenimento della stringa di riconfigurazione (conf_data) inviata dal gateway
+// Getting conf_data string
 String exchange_data_with_gateway();
 
-// analizza conf_data e assegna ogni valore contunuto nella stringa 
-// alla relativa variabile globale
+// Analyse conf_data and assign each value got from the string to the relative global variable (ActiveT,ActiveO..)
 void set_conf_data(String cd);
 
-// messaggio di errore inizializzazione libreria e modulo MKRWAN
+// Error message: initiliazing library and MRKWAN module
 void modem_start_err();
 
-// messaggi di info modem(modem version, modem deviceEUI)
+// Get modem info and display it(modem version, modem deviceEUI)
 void info_modem();
 
-// messaggio di errore connessione con gateway
+// Error Message: Connection with gateway
 void connect_to_gateway_message_error();
 
-// messaggio di invio corretto
+// Message succesfully sent
 void message_sent_ok();
 
-// messaggio di invio errore
+// Message failed to send
 void message_sent_error();
 
-/* implementazioni funzioni e procedure */
 
-// lettura dati dal sensore
-String read_data_from_sensor() // era String
+
+/* Defining Functions */
+
+String read_data_from_sensor() // was String
 {
 
-  float tempValues[2] = {0.00,0.00}; //tempValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
-                         //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
-                         //We only need a two values array, we initialize it at (0,00;0,00)
+  float DHTValues[2] = {0.00,0.00}; //DHTValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
+                                     //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
+                                     //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
+  float GPSValues[2] = {0.00,0.00}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
   if(activePM){
     statoPM = String(readPM(), 3);
@@ -95,24 +106,24 @@ String read_data_from_sensor() // era String
   
   if(activeT){
     statoT = String(readTemp(), 3); 
-    tempValues[0] = statoT.toFloat();
+    DHTValues[0] = statoT.toFloat();
   }
 
   if(activeH){
     statoH = String(readHum(), 3);
-    tempValues[1] = statoH.toFloat();
+    DHTValues[1] = statoH.toFloat();
   }
 
   if(activeO){
     if(calibrateO){
-      statoO = String(readOzono(calibrateO), 3); //calibratura solo la prima volta..
+      statoO = String(readOzono(calibrateO), 3);  //with this if block we calibrate the Ozone sensor just on the first cycle.
       calibrateO = false; 
     }
     statoO = String(readOzono(calibrateO), 3);
   }
   
   if(activeB){
-    statoB = String(readBenzene(tempValues[0],tempValues[1]), 3); //NEED TO TEST IT.. if doesn't work initialize the array with some values 
+    statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 3); 
   }
 
   if(activeA){
@@ -123,11 +134,15 @@ String read_data_from_sensor() // era String
    statoAL = String(readAldeidi(), 3); 
   }
 
+  if(activeGPS){
+    //statoGPS = readGPS(); ((ADDED)) DEVO CAPIRE COME FARE LA LETTURA DEL GPS.
+  }
+
   String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoA + "ppm " + "Aldehydes:" + statoAL + "ppm";
   return msg;
 }
 
-// invio dati al gateway
+
 int send_data_to_gateway(String msg)
 {
   modem.beginPacket();
@@ -135,26 +150,25 @@ int send_data_to_gateway(String msg)
   return modem.endPacket(true);
 }
 
-// connessione con il gateway
+
 int connect_to_gateway(String ae, String ak)
 {
-  // connessione e associazione con il gateway
-  return modem.joinOTAA(ae, ak);
+  return modem.joinOTAA(ae, ak); // connection e association with the gateway
 }
 
-// ottenimento della stringa di riconfigurazione (conf_data) inviata dal gateway
+
 String exchange_data_with_gateway()
 { 
-  // controllo che ci siano dati disponibili per essere letti
-  // se non sono disponibili, ritorno una stringa vuota
+
+  //if there is no available data, return an empty string. 
   if (!modem.available())
   {
     Serial.println();
-    Serial.println("Nessun messaggio di downlink ricevuto in questo momento");
+    Serial.println("No downlink message available at the moment..");
     return "";
   }
   
-  // se sono disponibili, ritorno la stringa ricevuta in downlink dal gateway
+  //if some data is available...
   char rcv[64];
   int i = 0;
   while (modem.available()) 
@@ -162,18 +176,16 @@ String exchange_data_with_gateway()
     rcv[i++] = (char)modem.read();
   }
     
-  // stampo nel serial monitor quello che viene ricevuto dal gateway (a scopo di debug)
+  //print in the console what we receive from the gateway just for debugging.
   Serial.println();
-  Serial.print("Ricevuto: ");
+  Serial.print("Received: ");
 
-  // stringa di ritorno ricevuta dal gateway
+  //return string received from the gateway (rcv)
   return rcv;
 }
 
 
 
-// analizza conf_data e assegna ogni valore contunuto 
-// nella stringa alla relativa variabile globale
 void set_conf_data(String cd)
 {
   // indice iniziale, posto all'inizio della stringa
@@ -224,8 +236,8 @@ void set_conf_data(String cd)
   // fine while
 }
 
-// analizza conf_data e assegna ogni valore contunuto 
-// NEW VERSION
+ 
+// NEW VERSION of set_conf_data JUST FOR SIMULATION PURPOSES
 void set_conf_data_SIM(String data)
 {
  
@@ -233,15 +245,13 @@ void set_conf_data_SIM(String data)
   
 
 
-
-
-// messaggio di errore inizializzazione libreria e modulo MKRWAN
 void modem_start_err()
 {
-  Serial.println("Impossibile avviare il modulo, riprovare");
+  Serial.println("Cannot start MRKWAN module, please retry.. ");
 }
 
-// messaggi di info modem(modem version, modem deviceEUI)
+
+
 void info_modem()
 {
   Serial.print("Your module version is: ");
@@ -250,24 +260,27 @@ void info_modem()
   Serial.println(modem.deviceEUI());
 }
 
-// messaggio di errore connessione con gateway
+
+
 void connect_to_gateway_message_error()
 {
-  Serial.println("Qualcosa è andato storto; sei al chiuso? Avvicinati ad una finestra e riavvia Arduino");
+  Serial.println("Something went wrong; Are you indoor? Please move your Arduino board near a window and restart the script");
 }
 
-// messaggio di invio corretto
+
+
 void message_sent_ok()
 {
-  Serial.println("Messaggio inviato correttamente!");
+  Serial.println("Message succesfully sent!");
 }
 
-// messaggio di invio errore
+
+
 void message_sent_error()
 {
-  Serial.println("Errore durante l'invio del messaggio :(");
-  Serial.println("(puoi inviare un numero limitato di messaggi al minuto, a seconda della potenza del segnale");
-  Serial.println("può variare da 1 messaggio ogni paio di secondi a 1 messaggio ogni minuto)");
+  Serial.println("Error sending the message...  ");
+  Serial.println("Remember: You can send a limited number of message per minute, basing on your signal power!");
+  Serial.println("Your signal power may range from 1 msg every few seconds to 1 msg per minute.");
 }
 
 #endif
@@ -277,10 +290,7 @@ void message_sent_error()
 
 /* IDEAS AND FUTURE IMPLEMENTATIONS 
 
-ARRAY: https://stackoverflow.com/questions/16647702/how-to-use-float-in-an-array-in-c
-
-Avoid duplicate read of Temp and Humidity Sensor.
-
+REFACTORING: ALL DONE EXPECT set_conf_data WHICH MAY CHANGE
 
 WE NEED A BATTERY TO MAKE ARDUINO INDEPENDENT .
 https://www.instructables.com/Powering-Arduino-with-a-Battery/

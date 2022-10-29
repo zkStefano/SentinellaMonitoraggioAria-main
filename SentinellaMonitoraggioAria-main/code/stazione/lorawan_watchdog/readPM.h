@@ -22,9 +22,9 @@ float readPM(){
   Serial.println("Groove Dust Sensor => Detecting PM10 concentration..");
   starttime = millis(); //millis() get current time. We associate this value to starttime() to check the delta time elapsed in the while structure.
   while((millis()-starttime) < sampletime_ms){
-  duration = pulseIn(dataPinPM, LOW); // pulseIn() legge un impulso (sia di tipo HIGH oppure LOW) su un pin;
-                                      // se valore = HIGH allora pulseIn() aspetta che il pin vada nello stato HIGH, comincia a contare, quindi aspetta cha vada nello stato LOW e smette di contare.
-                                      // Restituisce la durata dell'impulso in microsecondi (0 se nessun impulso parte entro il timeout prestabilito).
+  duration = pulseIn(dataPinPM, LOW); // pulseIn() read an impulse (both HIGH or LOW) on a pin;
+                                      // if value = HIGH then pulseIn() wait for the pin to change state to HIGH, starts counting, then it waits that the pin state changes to LOW and so, it stops counting.
+                                      // return impulse lenght in ms (0 if no impulse start in a determined interval).
   lowpulseoccupancy = lowpulseoccupancy+duration;
   }
 
