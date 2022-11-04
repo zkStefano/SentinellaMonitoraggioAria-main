@@ -8,7 +8,7 @@
 #include "readBenzene.h"
 #include "readAmmonia.h"
 #include "readAldehydes.h"
-
+#include "readGPS.h"
 #include <DHT.h>
 #include <MQ131.h>
 #include <MQ135.h>
@@ -53,6 +53,10 @@ String statoAL = "0";
 String statoGPS = "0"; //((ADDED))
 //bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (1 Time Calibration)
 bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SKIP CALIBRATION)
+//GPS 
+String dataGPS[] = {"",""};
+//battery
+float battery = 100; //simulate the battery value -- every time we execute read data -0.5% (0.5% per loop)
 
 
 
@@ -88,6 +92,10 @@ void message_sent_ok();
 // Message failed to send
 void message_sent_error();
 
+//EXTRA
+// Parse Data 
+String getValue(String data, char separator, int index);
+
 
 
 /* Defining Functions */
@@ -98,7 +106,7 @@ String read_data_from_sensor() // was String
   float DHTValues[2] = {0.00,0.00}; //DHTValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
                                      //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
                                      //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
-  float GPSValues[2] = {0.00,0.00}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
+  String GPSValues[2] = {"",""}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
   if(activePM){
     statoPM = String(readPM(), 3);
@@ -135,10 +143,14 @@ String read_data_from_sensor() // was String
   }
 
   if(activeGPS){
-    //statoGPS = readGPS(); ((ADDED)) DEVO CAPIRE COME FARE LA LETTURA DEL GPS.
+    statoGPS = readGPS();
+    GPSValues[0] = getValue(statoGPS, '|', 0);
+    GPSValues[1] = getValue(statoGPS, '|', 1);
+
   }
 
-  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoA + "ppm " + "Aldehydes:" + statoAL + "ppm";
+  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoA + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
+  battery = battery - 0.5;
   return msg;
 }
 
@@ -285,7 +297,23 @@ void message_sent_error()
 
 #endif
 
+////FUNZIONI EXTRA AGGIUNTE 
 
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 
 
 /* IDEAS AND FUTURE IMPLEMENTATIONS 

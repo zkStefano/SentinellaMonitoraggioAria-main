@@ -14,6 +14,7 @@
 #include "readBenzene.h"
 #include "readAmmonia.h"
 #include "readAldehydes.h"
+#include "readGPS.h"
 // Modem declaration
 LoRaModem modem;
 // Reading arduino_secrets.h values
