@@ -1,25 +1,22 @@
 #ifndef readBenzene_h
 #define readBenzene_h
 
-#include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
+#include <Arduino.h> 
 #include <MQ135.h>
 
-#define dataPinB A2 // il pin di input analogico per la lettura del sensore
+#define dataPinB A2 // pin connected to the Board
 
 // MQ135:
 MQ135 mq135_sensor(dataPinB);
 
 // MQ135:
 float readBenzene(float Temp, float Hum){
-  //float temperature = readTemp(); // rileva la temperatura corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
-  //float humidity = readHum(); // rileva l'umidità corrente (questo è un valore casuale). E' consgliato misurarla con il sensore DHT22.
-  // Per un corretto utilizzo ed una accurata lettura della concentrazione è importante caibrare il sensore.
-  // Per fare ciò è necessario posizionare il sensore all'esterno, in un luogo in cui vi sia abbastanza aria pulita/fresca (idealmente una temperatura di 20°C con un 33% di umidità, in accordo con il datasheet), lasciarlo alimentato
-  // per 12-24 ore così da "bruciarlo" e stabilizzarlo.
-  // A questo punto sarà possibile leggere il valore calibrato della resistenza RZero (sempre all'esterno), con il comando:
+  // To get reliable data reads from the sensor its important to calibrate it correctly.
+  // We can do this by placing it outdoor (ideal conditions: 20 degrees, 33% humidity), let it run for 12-24 hours to "burn it" and stabilize it.
+  // Then, whilst remaining outdoor, we can read RZero value.
   //float rzero = gasSensor.getRZero();
-  // OSS: il miglior modo per fare tutt ciò è fare una media di letture multiple per combattere il rumore dell'ADC.
-  // Terminato il processo di calibrazione, dovremo solo passare il valore di rzero al costruttore in questo modo:
+  // OSS: best way to do this is by doing multiple reads to combat also the ADC noise.
+  // After calibration is finished, we will pass RZero to our constructor like this:
   //MQ135 mq135_sensor(PIN_MQ135, rzero);
   Serial.println("MQ135 => Detecting benzene concentration.. ");
 

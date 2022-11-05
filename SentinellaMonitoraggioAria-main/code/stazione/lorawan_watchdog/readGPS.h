@@ -56,3 +56,4 @@ String readGPS(){
 
 #endif
 
+// https://forum.arduino.cc/t/tinygps-location-problem/422301/7

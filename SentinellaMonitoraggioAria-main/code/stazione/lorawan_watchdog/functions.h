@@ -12,8 +12,7 @@
 #include <DHT.h>
 #include <MQ131.h>
 #include <MQ135.h>
-
-
+#include "sensorsStates.h" //((ADDED))
 
 /* EXTERN VARIABLES */
 
@@ -34,12 +33,15 @@ extern bool activeO;
 // activeB (param3)
 extern bool activeB;
 // activeA (param3)
-extern bool activeA;
+extern bool activeAM;
 // activeAL (param3)
 extern bool activeAL;
 // activeGPS ((ADDED))
 extern bool activeGPS;
-
+// summarize all the sensors States ((ADDED))
+//extern bool sensorsStates[8];
+// lowBattery ((ADDED.. WHEN BATTERY <20.00))
+extern bool lowBattery;
 
 
 /* Variables */
@@ -48,14 +50,12 @@ String statoH = "0";
 String statoPM = "0";
 String statoO = "0";
 String statoB = "0";
-String statoA = "0";
+String statoAM = "0";
 String statoAL = "0";
 String statoGPS = "0"; //((ADDED))
 //bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (1 Time Calibration)
 bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SKIP CALIBRATION)
-//GPS 
-String dataGPS[] = {"",""};
-//battery
+String dataGPS[] = {"",""}; //GPS  Values (latitude, longitude)
 float battery = 100; //simulate the battery value -- every time we execute read data -0.5% (0.5% per loop)
 
 
@@ -102,7 +102,6 @@ String getValue(String data, char separator, int index);
 
 String read_data_from_sensor() // was String
 {
-
   float DHTValues[2] = {0.00,0.00}; //DHTValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
                                      //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
                                      //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
@@ -134,8 +133,8 @@ String read_data_from_sensor() // was String
     statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 3); 
   }
 
-  if(activeA){
-    statoA = String(readAmmoniaca(), 3);
+  if(activeAM){
+    statoAM = String(readAmmoniaca(), 3);
   }
   
   if(activeAL){
@@ -149,8 +148,11 @@ String read_data_from_sensor() // was String
 
   }
 
-  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoA + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
+  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
   battery = battery - 0.5;
+  if (battery < 20.00){
+    lowBattery = true;
+  }
   return msg;
 }
 
@@ -252,7 +254,28 @@ void set_conf_data(String cd)
 // NEW VERSION of set_conf_data JUST FOR SIMULATION PURPOSES
 void set_conf_data_SIM(String data)
 {
- 
+ //int newValues[] = {0,0,0,0,0,0,0,0,0,0}; //ten values
+ //SPLIT THE STRING BY ','
+ String parziale = "";
+ int result = 0;
+ Serial.print("Pre Splitting: " + data + "   LENGTH: ");
+ Serial.println( data.length());
+ for (int i = 0; i< data.length(); i = i +2){
+   //First 8 Sensors states (PM10,TEMP,HUM,OZONE,BENZENE,AM,AL,GPS)
+   if (i < 8) {
+    parziale = data.substring(i,i+1);
+    Serial.println(parziale);
+    result = parziale.toInt();    
+    if (result == 0) {
+       sensorsStates[i/2]  = false;
+    }  
+    else{
+       sensorsStates[i/2] = true;
+    }
+   }
+   Serial.println(sensorsStates[i/2]);
+ }
+ Serial.print("Finished");
 }
   
 
@@ -330,5 +353,12 @@ https://forum.arduino.cc/t/measuring-the-battery-voltage-using-the-adc-on-mini-3
 
 SIGNAL POWER:
 https://forum.arduino.cc/t/reading-rf-signal-strength/576273/13
+
+COMUNICAZIONE CON ARDUINO TRAMITE IL SERIAL MONITOR: https://www.youtube.com/watch?v=qCjCRBLv_VM
+Approfondimento su Serial.Read (array di 64 bit per il trasferimento PC -> ARDUINO) e Serial.available (numero byte nel buffer)
+String to int: https://docs.arduino.cc/built-in-examples/strings/StringToInt
+.H per permettere di usare l'array https://stackoverflow.com/questions/7670816/create-extern-char-array-in-c
+
+https://stackoverflow.com/questions/58919042/im-having-an-2d-array-redefinition-error ---> if i would like to use sensorStates for all the files link it with #include to lorawan_watchdog.ino and then i could use extern (to try)
 
 */

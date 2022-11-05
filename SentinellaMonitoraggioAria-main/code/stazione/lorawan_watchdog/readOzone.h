@@ -1,7 +1,7 @@
 #ifndef readOzone_h
 #define readOzone_h
 
-#include <Arduino.h> // necessario includere la libreria se si vogliono utilizzare funzioni di arduino come digitalWrite()...
+#include <Arduino.h> 
 #include <MQ131.h>
 
 #define dataPinO A0
@@ -9,7 +9,7 @@
 // MQ131:
 float readOzono(bool calibrate){
   // MQ131:
-  // Inizializza/avvia il sensore (necessari i 4 parametri)
+  // Start the sensor(we need 4 values).
   // Controllo (della potenza del) riscaldatore (resistenza) sul pin 2
   // Lettura analogica del sensore sul pin A0 (output)
   // Modello LOW_CONCENTRATION // Il "materiale sensibile" del sensore MQ131 è il WO3 (Ossido di Tungsteno(VI), ovvero Triossido di Tungsteno o Anidride Tungstica), che ha una condttivtà inferiore nell'aria pulita
@@ -19,7 +19,7 @@ float readOzono(bool calibrate){
   
   MQ131.begin(2, dataPinO, LOW_CONCENTRATION, 1000000); //MODIFICA: FORSE QUESTA è DA METTERE ALL'INTERNO DELLA GUARDIA...
 
-  // Prima di usare il sensore è meglio calibrarlo; la calibrazione è "buona pratica" farla avvenire a 20°C e 65% di umidità in aria pulita.
+  // We better calibrate the sensor before using it, ideally at 20 degrees and 65% humidity.
   if (calibrate){
   Serial.println("Calibration MQ131 in progress...");
   MQ131.calibrate();

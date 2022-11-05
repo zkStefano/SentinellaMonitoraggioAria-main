@@ -2,9 +2,8 @@
   Lora send data
 */
 
-// Include MKRWAN.h library
+// libraries
 #include <MKRWAN.h>
-// Inclusione arduino_secrets.h, functions.h and sensor modules
 #include "arduino_secrets.h"
 #include "functions.h"
 #include "readTemperature.h"
@@ -15,6 +14,8 @@
 #include "readAmmonia.h"
 #include "readAldehydes.h"
 #include "readGPS.h"
+
+
 // Modem declaration
 LoRaModem modem;
 // Reading arduino_secrets.h values
@@ -37,14 +38,16 @@ int timetosend;
 int timetoreceive;
 
 //Sensor Flags
+bool activePM; // PM10
 bool activeT; // Temperature 
 bool activeH; // Humidity
-bool activePM; // PM10
 bool activeO; // Ozone
 bool activeB; // Benzene
-bool activeA; // Ammonia
+bool activeAM; // Ammonia
 bool activeAL; // Aldehydes
 bool activeGPS; // GPS ((ADDED... TO TEST))
+//bool sensorsStates[] = {false,false,false,false,false,false,false,false}; // SUMMARIZE LAST 8 VALUES. ((ADDED - my solution ))
+bool lowBattery; //low Battery state
 
 
 // OTHER VARIABLES
@@ -75,11 +78,13 @@ void setup() {
   activeT = true;
   activeH = true;
   activePM = true;
-  activeO = true;
+  activeO = false; //riattivarlo quando funziona
   activeB = true;
-  activeA = true;
+  activeAM = true;
   activeAL = true;
-  activeGPS = true; //((ADDED))
+  activeGPS = false; //((ADDED)) --> change to true when you active GPS
+  //bool sensorsStates[8] = {activePM,activeT,activeH,activeO,activeB,activeAM,activeAL,activeGPS}; //THIS GETS DECLARED AND INITIALIZED IN THE SAME PLACE;
+  lowBattery = false; //((ADDED)) <20%
 
 /*  
   // Gateway connection
@@ -111,38 +116,38 @@ void loop() {
   // UPLINK DATA
   if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
   {
-    // Lettura dati dal sensore
-    // Stringa con i dati da trasmettere al gateway
+    //read data from sensors --> msg --> conf-data
     Serial.println("----------------- CYCLE => " + String(cycle) );
     String msg = read_data_from_sensor();
+    Serial.println(msg);
     /*LETTURA STRINGA CONF_DATA input,
     se CONF_DATA
     */
-    Serial.println(msg);
     cycle++;
     Serial.println();
     Serial.println();
   }
-/*
-  // invio dati al gateway
+
+
+  /*
+  // SEND DATA TO THE GATEWAY
     int err = send_data_to_gateway(msg);
-    // Controllo codice errore
+    // Check error code
     if (err > 0) 
     {
-      // Procedura che restituisce il messaggio di invio corretto
+      //Return correct value
       message_sent_ok();
     } 
     else 
     {
-      // Procedura che restituisce il messaggio di invio errato
+      //Return error message
       message_sent_error();
     }
 
-    // Eguaglio previousMillisS (invio) con currentMillis
-    // per gestire il rollover di millis()
+    //to handle millis() rollover
     previousMillisS = currentMillis;
   }
-  
+  */
 
 
 
@@ -151,25 +156,28 @@ void loop() {
   { 
     ///// GETTING conf_data VIA CONSOLE (SIMULATING IT)  
     Serial.println("Set the conf_data parametres");  
-    while (Serial.available() == 0)   
-    { //Wait for user input  }       //WANT TO HAVE [1,1,1,1,1,1,0,23400,53000]
+    Serial.print(" Buffer characters => ");
+    Serial.println(Serial.available());
+    while (Serial.available() != 0)   
+    //while (Serial.available() == 0)   
+    { //Wait for user input       
     conf_data = Serial.readString(); 
-    
+    //WANT TO HAVE [1,1,1,1,1,1,0,23400,53000] - 0/1 off - type [activePM, activeT, activeH, activeO, activeB , activeAM, activeAL, ActiveGPS, tts, ttr]
+    //I PASS THE STRING AS "1,1,1,1,1,1,1,1,30000,60000"
     ///CHECK
     if(conf_data != "")
     {
-      // Associazione dei parametri di riconfigurazione 
-      // presenti in conf_data alle relative variabili globali
-      set_conf_data(conf_data);
+      Serial.println(conf_data);
+      set_conf_data_SIM(conf_data); //WE SPLIT THE STRING INSIDE HERE.
+      Serial.println("Configuration finished..");
     }
 
-    // Eguaglio previousMillisR (controllo ricezione) con currentMillis
-    // per gestire il rollover di millis()
+    //handle millis() rollover
     previousMillisR = currentMillis;
   }
+  }
 
-
-
+  /**
   //DOWNLINK DATA Original
   if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive )
   { 
@@ -178,13 +186,10 @@ void loop() {
     // controllo: se conf_data non è nulla
     if(conf_data != "")
     {
-      // Associazione dei parametri di riconfigurazione 
-      // presenti in conf_data alle relative variabili globali
       set_conf_data(conf_data);
     }
 
-    // Eguaglio previousMillisR (controllo ricezione) con currentMillis
-    // per gestire il rollover di millis()
+    //handle millis() rollover
     previousMillisR = currentMillis;
   }
 */     
