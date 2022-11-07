@@ -28,6 +28,7 @@ String combine = ""; //since we cannot pass an array as function result, we pass
 //FUNCTUIN
 String readGPS(){
 
+  Serial.println("I'm in readGPS"); //check if we're actually in the function of GPS... not working for me at my house
   while (gpsSerial.available() > 0) {
     if (gps.encode(gpsSerial.read())) {
       

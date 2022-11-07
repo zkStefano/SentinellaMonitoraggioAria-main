@@ -38,13 +38,12 @@ extern bool activeAM;
 extern bool activeAL;
 // activeGPS ((ADDED))
 extern bool activeGPS;
-// summarize all the sensors States ((ADDED))
-//extern bool sensorsStates[8];
+// summarize all the sensors States ((ADDED in sensorStates.h))
 // lowBattery ((ADDED.. WHEN BATTERY <20.00))
 extern bool lowBattery;
 
 
-/* Variables */
+/* Variables + Initiliazing Values */
 String statoT = "0";
 String statoH = "0";
 String statoPM = "0";
@@ -52,12 +51,16 @@ String statoO = "0";
 String statoB = "0";
 String statoAM = "0";
 String statoAL = "0";
-String statoGPS = "0"; //((ADDED))
-//bool calibrateO = true; //With this we can execute the Ozone sensor calibration just one time. (1 Time Calibration)
-bool calibrateO = false; //With this we can execute the Ozone sensor calibration just one time. (SKIP CALIBRATION)
+//ADDED 
+String statoGPS = "0"; 
 String dataGPS[] = {"",""}; //GPS  Values (latitude, longitude)
 float battery = 100; //simulate the battery value -- every time we execute read data -0.5% (0.5% per loop)
-
+bool calibrateO = false;// FALSE - MQ131 doesn't get calibrated || TRUE -  MQ131 gets calibrated the first time
+//We active all the sensors at the start with:
+/*for (int i = 0; i < sensorsStates.length(); i++){
+  sensorsStates[i] = true;
+}
+*/
 
 
 /* Functions Declarations */ 
@@ -107,16 +110,16 @@ String read_data_from_sensor() // was String
                                      //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
   String GPSValues[2] = {"",""}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
-  if(activePM){
+  if(sensorsStates[0]){
     statoPM = String(readPM(), 3);
   }
   
-  if(activeT){
+  if(sensorsStates[1]){
     statoT = String(readTemp(), 3); 
     DHTValues[0] = statoT.toFloat();
   }
 
-  if(activeH){
+  if(sensorsStates[2]){
     statoH = String(readHum(), 3);
     DHTValues[1] = statoH.toFloat();
   }
@@ -129,19 +132,19 @@ String read_data_from_sensor() // was String
     statoO = String(readOzono(calibrateO), 3);
   }
   
-  if(activeB){
+  if(sensorsStates[4]){
     statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 3); 
   }
 
-  if(activeAM){
+  if(sensorsStates[5]){
     statoAM = String(readAmmoniaca(), 3);
   }
   
-  if(activeAL){
+  if(sensorsStates[6]){
    statoAL = String(readAldeidi(), 3); 
   }
 
-  if(activeGPS){
+  if(sensorsStates[7]){ //TRYING TO HANDLE STATE CHECK WITH JUST AN ARRAY
     statoGPS = readGPS();
     GPSValues[0] = getValue(statoGPS, '|', 0);
     GPSValues[1] = getValue(statoGPS, '|', 1);
@@ -256,26 +259,51 @@ void set_conf_data_SIM(String data)
 {
  //int newValues[] = {0,0,0,0,0,0,0,0,0,0}; //ten values
  //SPLIT THE STRING BY ','
- String parziale = "";
+ String part2 = data.substring(16);
+ //since we do not know the lenght of tts and ttr we build it by reading them 
+ String tts = ""; 
+ String ttr = "";
+ bool over = false; //this flag let us know when have read the whole tts and we should start with ttr;
+ 
+ Serial.println(part2);
  int result = 0;
  Serial.print("Pre Splitting: " + data + "   LENGTH: ");
  Serial.println( data.length());
- for (int i = 0; i< data.length(); i = i +2){
+ for (int i = 0; i < 17 ; i = i +2){
    //First 8 Sensors states (PM10,TEMP,HUM,OZONE,BENZENE,AM,AL,GPS)
-   if (i < 8) {
-    parziale = data.substring(i,i+1);
-    Serial.println(parziale);
-    result = parziale.toInt();    
+   if (i < 16) {
+    result=data.substring(i,i+1).toInt();
     if (result == 0) {
        sensorsStates[i/2]  = false;
     }  
     else{
        sensorsStates[i/2] = true;
     }
+    Serial.println("State of " + sensorsNames[i/2] + " sensor => "  + sensorsStates[i/2]);
+    //Serial.println(getSensInfos[i/2]);
    }
-   Serial.println(sensorsStates[i/2]);
+   //tts
+   if(i>15) { //LAST CYCLE --- I only need to read the last two values which are stored in "part2"
+    for (int j = 0; j < part2.length(); j++){ 
+      if (over == false){
+        if(part2[j] == ','){
+          over = true;
+        } 
+        else{
+          tts += part2[j];
+        } 
+      }
+      else{
+        ttr += part2[j];
+      }
+
+    }
+    Serial.println("tts => " + tts);
+    timetosend = tts.toInt();
+    Serial.println("ttr => " + ttr);
+    timetoreceive = ttr.toInt();
+   }
  }
- Serial.print("Finished");
 }
   
 
@@ -360,5 +388,18 @@ String to int: https://docs.arduino.cc/built-in-examples/strings/StringToInt
 .H per permettere di usare l'array https://stackoverflow.com/questions/7670816/create-extern-char-array-in-c
 
 https://stackoverflow.com/questions/58919042/im-having-an-2d-array-redefinition-error ---> if i would like to use sensorStates for all the files link it with #include to lorawan_watchdog.ino and then i could use extern (to try)
+
+
+/* IDEAS ...
+
+1) Low Battery Mode --> WHAT WE CAN DO HERE? Slow Down (tts*2,ttr*2... but this may interfere with the conf_data read and so be useless..)
+Example
+Initial Scenario: Battery 100%, tts: 20k ms, 40kms;
+Simulate Conf_data received at Battery 21%:  set tts: 30k ms, 50k ms;
+Low Battery activated: Battery 20%, tts: 40k ms, 80k ms;
+Simulate Cond_data received at Battery 19%: set tts: 35k ms, 60k ms;      <------ BUT WE CANNOT GO BELOW 40k/80k 
+
+2)
+
 
 */

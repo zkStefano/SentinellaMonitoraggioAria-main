@@ -14,7 +14,7 @@
 #include "readAmmonia.h"
 #include "readAldehydes.h"
 #include "readGPS.h"
-
+#include "sensorsStates.h"
 
 // Modem declaration
 LoRaModem modem;
@@ -83,7 +83,7 @@ void setup() {
   activeAM = true;
   activeAL = true;
   activeGPS = false; //((ADDED)) --> change to true when you active GPS
-  //bool sensorsStates[8] = {activePM,activeT,activeH,activeO,activeB,activeAM,activeAL,activeGPS}; //THIS GETS DECLARED AND INITIALIZED IN THE SAME PLACE;
+  //sensorsStates[8] = {activePM,activeT,activeH,activeO,activeB,activeAM,activeAL,activeGPS}; //THIS GETS DECLARED AND INITIALIZED IN THE SAME PLACE;
   lowBattery = false; //((ADDED)) <20%
 
 /*  
