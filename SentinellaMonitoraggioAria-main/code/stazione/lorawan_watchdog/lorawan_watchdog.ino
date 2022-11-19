@@ -46,7 +46,6 @@ bool activeB; // Benzene
 bool activeAM; // Ammonia
 bool activeAL; // Aldehydes
 bool activeGPS; // GPS ((ADDED... TO TEST))
-//bool sensorsStates[] = {false,false,false,false,false,false,false,false}; // SUMMARIZE LAST 8 VALUES. ((ADDED - my solution ))
 bool lowBattery; //low Battery state
 
 
@@ -108,15 +107,19 @@ Serial.println();
 
 
 // LOOP:
-void loop() {
+void loop() { //read data from sensors --> msg --> conf-data
+
+
 
   // Assigning variable millis();
   currentMillis = millis();
   
+
+
   // UPLINK DATA
   if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
   {
-    //read data from sensors --> msg --> conf-data
+    Serial.println();
     Serial.println("----------------- CYCLE => " + String(cycle) );
     String msg = read_data_from_sensor();
     Serial.println(msg);
@@ -124,9 +127,8 @@ void loop() {
     se CONF_DATA
     */
     cycle++;
-    Serial.println();
-    Serial.println();
   }
+
 
 
   /*
@@ -151,31 +153,29 @@ void loop() {
 
 
 
-  //DOWNLINK DATA Simulated (Using https://www.c-sharpcorner.com/article/reading-input-from-serial-monitor-in-arduino/)
+  //DOWNLINK DATA Simulated ... getting conf_data via console (simulation... max 64 bytes per read)
   if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive )
   { 
-    ///// GETTING conf_data VIA CONSOLE (SIMULATING IT)  
-    Serial.println("Set the conf_data parametres");  
-    Serial.print(" Buffer characters => ");
-    Serial.println(Serial.available());
-    while (Serial.available() != 0)   
-    //while (Serial.available() == 0)   
-    { //Wait for user input       
-    conf_data = Serial.readString(); 
-    //WANT TO HAVE [1,1,1,1,1,1,0,23400,53000] - 0/1 off - type [activePM, activeT, activeH, activeO, activeB , activeAM, activeAL, ActiveGPS, tts, ttr]
-    //I PASS THE STRING AS "1,1,1,1,1,1,1,1,30000,60000"
-    ///CHECK
-    if(conf_data != "")
+
+    Serial.println("Looking for configuration data..");  
+    //Serial.print(" Buffer characters => "); active this during debugging
+    //Serial.println(Serial.available()); active this during debugging
+
+    while (Serial.available() != 0)   { // Wait for user input       
+    conf_data = Serial.readString(); //we expect a string like this [1,1,1,1,1,1,1,1,30000,50000]
+    if(conf_data != "") //we check if there is something to read
     {
       Serial.println(conf_data);
-      set_conf_data_SIM(conf_data); //WE SPLIT THE STRING INSIDE HERE.
+      set_conf_data_SIM(conf_data); //we call the new simulated function here to parse the data
       Serial.println("Configuration finished..");
     }
 
     //handle millis() rollover
     previousMillisR = currentMillis;
+    }
   }
-  }
+
+
 
   /**
   //DOWNLINK DATA Original

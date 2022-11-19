@@ -56,11 +56,7 @@ String statoGPS = "0";
 String dataGPS[] = {"",""}; //GPS  Values (latitude, longitude)
 float battery = 100; //simulate the battery value -- every time we execute read data -0.5% (0.5% per loop)
 bool calibrateO = false;// FALSE - MQ131 doesn't get calibrated || TRUE -  MQ131 gets calibrated the first time
-//We active all the sensors at the start with:
-/*for (int i = 0; i < sensorsStates.length(); i++){
-  sensorsStates[i] = true;
-}
-*/
+
 
 
 /* Functions Declarations */ 
@@ -99,6 +95,9 @@ void message_sent_error();
 // Parse Data 
 String getValue(String data, char separator, int index);
 
+// Get number of separators (used for integrity)
+int countCheck(String data, char separator);
+
 
 
 /* Defining Functions */
@@ -110,21 +109,21 @@ String read_data_from_sensor() // was String
                                      //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
   String GPSValues[2] = {"",""}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
-  if(sensorsStates[0]){
+  if(sensorsActiveFlags[0]){
     statoPM = String(readPM(), 3);
   }
   
-  if(sensorsStates[1]){
+  if(sensorsActiveFlags[1]){
     statoT = String(readTemp(), 3); 
     DHTValues[0] = statoT.toFloat();
   }
 
-  if(sensorsStates[2]){
+  if(sensorsActiveFlags[2]){
     statoH = String(readHum(), 3);
     DHTValues[1] = statoH.toFloat();
   }
 
-  if(activeO){
+  if(sensorsActiveFlags[3]){
     if(calibrateO){
       statoO = String(readOzono(calibrateO), 3);  //with this if block we calibrate the Ozone sensor just on the first cycle.
       calibrateO = false; 
@@ -132,19 +131,19 @@ String read_data_from_sensor() // was String
     statoO = String(readOzono(calibrateO), 3);
   }
   
-  if(sensorsStates[4]){
+  if(sensorsActiveFlags[4]){
     statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 3); 
   }
 
-  if(sensorsStates[5]){
+  if(sensorsActiveFlags[5]){
     statoAM = String(readAmmoniaca(), 3);
   }
   
-  if(sensorsStates[6]){
+  if(sensorsActiveFlags[6]){
    statoAL = String(readAldeidi(), 3); 
   }
 
-  if(sensorsStates[7]){ //TRYING TO HANDLE STATE CHECK WITH JUST AN ARRAY
+  if(sensorsActiveFlags[7]){ //TRYING TO HANDLE STATE CHECK WITH JUST AN ARRAY
     statoGPS = readGPS();
     GPSValues[0] = getValue(statoGPS, '|', 0);
     GPSValues[1] = getValue(statoGPS, '|', 1);
@@ -152,7 +151,7 @@ String read_data_from_sensor() // was String
   }
 
   String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + statoPM + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
-  battery = battery - 0.5;
+  battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
   if (battery < 20.00){
     lowBattery = true;
   }
@@ -255,31 +254,29 @@ void set_conf_data(String cd)
 
  
 // NEW VERSION of set_conf_data JUST FOR SIMULATION PURPOSES
-void set_conf_data_SIM(String data)
+void set_conf_data_SIM(String data)  //SPLIT THE STRING BY ',' 
 {
- //int newValues[] = {0,0,0,0,0,0,0,0,0,0}; //ten values
- //SPLIT THE STRING BY ','
- String part2 = data.substring(16);
- //since we do not know the lenght of tts and ttr we build it by reading them 
- String tts = ""; 
- String ttr = "";
+ String part2 = data.substring(16); //we create a substring of data.  EX: DATA is [1,1,1,1,1,1,1,0,50000,80000] => PART2 is [50000,80000]
+ String tts = ""; //since we do not know the lenght of tts  we build it by reading them. They might have 4,5,6 characters so we build a dynamic string
+ String ttr = ""; //since we do not know the lenght of ttr  we build it by reading them. They might have 4,5,6 characters so we build a dynamic string
  bool over = false; //this flag let us know when have read the whole tts and we should start with ttr;
- 
- Serial.println(part2);
  int result = 0;
+ 
+ /* DEBUG STRINGS
  Serial.print("Pre Splitting: " + data + "   LENGTH: ");
- Serial.println( data.length());
+ Serial.println( data.length()); */
+ if (!((data.length() < 24 || data.length() > 35) && (countCheck(data,',') < 9))){  //part 1: edit this condition value (sx = 24, dx = 35) like this: -add sensors (+2 dx), -remove sensors (-2 sx) .... part 2 : for each sensor we expect "0/1" and ',' so assuming Z = nSensors + 1 .. it should be always be verified data.count(',')> Z
  for (int i = 0; i < 17 ; i = i +2){
    //First 8 Sensors states (PM10,TEMP,HUM,OZONE,BENZENE,AM,AL,GPS)
    if (i < 16) {
     result=data.substring(i,i+1).toInt();
     if (result == 0) {
-       sensorsStates[i/2]  = false;
+       sensorsActiveFlags[i/2]  = false;
     }  
     else{
-       sensorsStates[i/2] = true;
+       sensorsActiveFlags[i/2] = true;
     }
-    Serial.println("State of " + sensorsNames[i/2] + " sensor => "  + sensorsStates[i/2]);
+    Serial.println("State of " + sensorsNames[i/2] + " sensor => "  + sensorsActiveFlags[i/2]);
     //Serial.println(getSensInfos[i/2]);
    }
    //tts
@@ -303,6 +300,10 @@ void set_conf_data_SIM(String data)
     Serial.println("ttr => " + ttr);
     timetoreceive = ttr.toInt();
    }
+ }
+ }
+ else{
+  Serial.println("Configuration String is incorrect, please retry..");
  }
 }
   
@@ -367,9 +368,18 @@ String getValue(String data, char separator, int index)
 }
 
 
+int countCheck(String data, char separator)
+{
+  int countSeparators = 0;
+  for (int i = 0; i < data.length(); i++){
+    if (data.charAt(i) == separator){ countSeparators ++; }
+  }
+  return countSeparators;
+}
+
+
 /* IDEAS AND FUTURE IMPLEMENTATIONS 
 
-REFACTORING: ALL DONE EXPECT set_conf_data WHICH MAY CHANGE
 
 WE NEED A BATTERY TO MAKE ARDUINO INDEPENDENT .
 https://www.instructables.com/Powering-Arduino-with-a-Battery/
@@ -377,7 +387,6 @@ https://www.instructables.com/Powering-Arduino-with-a-Battery/
 CHECK BATTERY LEVEL:
 https://forum.arduino.cc/t/battery-level-check-using-arduino/424054/3
 https://forum.arduino.cc/t/measuring-the-battery-voltage-using-the-adc-on-mini-3v3-8mhz/422944
-
 
 SIGNAL POWER:
 https://forum.arduino.cc/t/reading-rf-signal-strength/576273/13
@@ -399,7 +408,7 @@ Simulate Conf_data received at Battery 21%:  set tts: 30k ms, 50k ms;
 Low Battery activated: Battery 20%, tts: 40k ms, 80k ms;
 Simulate Cond_data received at Battery 19%: set tts: 35k ms, 60k ms;      <------ BUT WE CANNOT GO BELOW 40k/80k 
 
-2)
-
+2) Can't we aggregate all 'StatoH,StatoT,StatoPM10' in an array structure in sensorStates?
+Please see sensorsStates.h
 
 */
