@@ -111,17 +111,19 @@ String read_data_from_sensor() // was String
 
   if(sensorsActiveFlags[0]){
     statoPM = String(readPM(), 2); 
-    sensorsValues[0] = statoPM;
+    sensorsValues[0] = statoPM; //EXTRA ALTERNATIVE
   }
   
   if(sensorsActiveFlags[1]){
     statoT = String(readTemp(), 2); 
     DHTValues[0] = statoT.toFloat();
+    sensorsValues[1] = DHTValues[0]; //EXTRA ALTERNATIVE
   }
 
   if(sensorsActiveFlags[2]){
     statoH = String(readHum(), 2);
     DHTValues[1] = statoH.toFloat();
+    sensorsValues[2] = DHTValues[1]; //EXTRA ALTERNATIVE
   }
 
   if(sensorsActiveFlags[3]){
@@ -130,18 +132,22 @@ String read_data_from_sensor() // was String
       calibrateO = false; 
     }
     statoO = String(readOzono(calibrateO), 2);
+    sensorsValues[3] = statoO; //EXTRA ALTERNATIVE
   }
   
   if(sensorsActiveFlags[4]){
     statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 2); 
+    sensorsValues[4] = statoB; //EXTRA ALTERNATIVE
   }
 
   if(sensorsActiveFlags[5]){
     statoAM = String(readAmmoniaca(), 2);
+    sensorsValues[5] = statoAM; //EXTRA ALTERNATIVE
   }
   
   if(sensorsActiveFlags[6]){
    statoAL = String(readAldeidi(), 2); 
+   sensorsValues[6] = statoAL; //EXTRA ALTERNATIVE
   }
 
   if(sensorsActiveFlags[7]){ //TRYING TO HANDLE STATE CHECK WITH JUST AN ARRAY
@@ -154,9 +160,14 @@ String read_data_from_sensor() // was String
   String msg = "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " +  "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
   //String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
   battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
-  if (battery < 20.00){
-    lowBattery = true;
-  }
+  /*ALTERNATIVA
+  String msg = buildMSG();
+  battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25);
+  resetValues();
+  */ 
+  //if (battery < 20.00){
+    //lowBattery = true;
+  //}
   return msg;
 }
 
@@ -369,7 +380,7 @@ String getValue(String data, char separator, int index)
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
-
+//countCheck will be rewritten in checkConfData
 int countCheck(String data, char separator)
 {
   int countSeparators = 0;
@@ -378,6 +389,30 @@ int countCheck(String data, char separator)
   }
   return countSeparators;
 }
+
+//resetValues: after each cycle it automatically resets the sensorsValues array.
+void resetValues(){
+  for (i= 0; i < sensorsValues.lenght(); i++){
+    sensorsValues[i] = "-";
+  }
+}
+
+//buildMSG:
+String buildMSG(){
+  String ms = ""; //initialize ms
+  //Sensors - GPS
+  for (i = 0; i< sensorsValues.lenght()-1;i++){
+    ms = ms + getSensInfos(i);
+  }
+  //GPS
+  ms = ms + "Latitude:"+GPSValues[0]+"|"+"Longitude:"+GPSValues[1]+"|";
+  //Battery
+  ms = ms + "Battery:"+battery+"|";
+  //other to add... power signal.. gateway communicating to..?
+  Serial.println(ms);
+  return ms;
+}
+
 
 
 /* IDEAS AND FUTURE IMPLEMENTATIONS 
