@@ -30,7 +30,7 @@ String readGPS(){
 
   Serial.println(" GPS => Trying to get location..");
   gpsSerial.begin(9600); //initialize gps serial.
-  delay(3000); //we may reduce to 2s.
+  delay(3000); //we may reduce this to 2s.
   Serial.println(gpsSerial.available()); //Print for debug purposes. if gpsSerial return 0 a good practice might be to use last known location.
   while (gpsSerial.available() > 0) {
     if (gps.encode(gpsSerial.read())) {

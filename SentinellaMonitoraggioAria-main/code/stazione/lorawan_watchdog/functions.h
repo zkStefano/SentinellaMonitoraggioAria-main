@@ -110,38 +110,38 @@ String read_data_from_sensor() // was String
   String GPSValues[2] = {"",""}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
   if(sensorsActiveFlags[0]){
-    statoPM = String(readPM(), 3);
+    statoPM = String(readPM(), 2); 
     sensorsValues[0] = statoPM;
   }
   
   if(sensorsActiveFlags[1]){
-    statoT = String(readTemp(), 3); 
+    statoT = String(readTemp(), 2); 
     DHTValues[0] = statoT.toFloat();
   }
 
   if(sensorsActiveFlags[2]){
-    statoH = String(readHum(), 3);
+    statoH = String(readHum(), 2);
     DHTValues[1] = statoH.toFloat();
   }
 
   if(sensorsActiveFlags[3]){
     if(calibrateO){
-      statoO = String(readOzono(calibrateO), 3);  //with this if block we calibrate the Ozone sensor just on the first cycle.
+      statoO = String(readOzono(calibrateO), 2);  //with this if block we calibrate the Ozone sensor just on the first cycle.
       calibrateO = false; 
     }
-    statoO = String(readOzono(calibrateO), 3);
+    statoO = String(readOzono(calibrateO), 2);
   }
   
   if(sensorsActiveFlags[4]){
-    statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 3); 
+    statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 2); 
   }
 
   if(sensorsActiveFlags[5]){
-    statoAM = String(readAmmoniaca(), 3);
+    statoAM = String(readAmmoniaca(), 2);
   }
   
   if(sensorsActiveFlags[6]){
-   statoAL = String(readAldeidi(), 3); 
+   statoAL = String(readAldeidi(), 2); 
   }
 
   if(sensorsActiveFlags[7]){ //TRYING TO HANDLE STATE CHECK WITH JUST AN ARRAY
@@ -151,7 +151,8 @@ String read_data_from_sensor() // was String
 
   }
 
-  String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
+  String msg = "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " +  "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
+  //String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
   battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
   if (battery < 20.00){
     lowBattery = true;
