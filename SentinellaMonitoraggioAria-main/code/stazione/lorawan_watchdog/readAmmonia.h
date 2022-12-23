@@ -18,7 +18,7 @@ float readAmmoniaca(){
   float VRL; // Voltage in RL
   float Rs; // Resistor value at a given gas concentration.
   float ratio; // Represents Rs/Ro
-  Serial.println("MQ137 => Detecting ammonia concentration.. ");
+  Serial.println("MQ137 => Detecting Ammonia concentration.. ");
 
   for(int i = 1 ; i <= 500 ; i++){ // read analog values 500 times.
     analog_value = analog_value + analogRead(dataPinA); // sum analog values

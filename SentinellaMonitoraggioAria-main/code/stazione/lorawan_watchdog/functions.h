@@ -38,24 +38,25 @@ extern bool activeAM;
 extern bool activeAL;
 // activeGPS ((ADDED))
 extern bool activeGPS;
-// summarize all the sensors States ((ADDED in sensorStates.h))
-// lowBattery ((ADDED.. WHEN BATTERY <20.00))
-extern bool lowBattery;
+
+//gateway variables
+int gw = 0; //active gateway number
+int gwFails = 0; //number of gateway fails ... might be extern this one
+int gwAdded = 0; //number of gateway added
 
 
 /* Variables + Initiliazing Values */
-String statoT = "0";
+String statoT = "0"; //we may delete all these
 String statoH = "0";
 String statoPM = "0";
 String statoO = "0";
 String statoB = "0";
 String statoAM = "0";
 String statoAL = "0";
-//ADDED 
 String statoGPS = "0"; 
-String dataGPS[] = {"",""}; //GPS  Values (latitude, longitude)
+String dataGPS[] = {"",""}; //GPS  Values (latitude, longitude) *** we may not need this
 float battery = 100; //simulate the battery value -- every time we execute read data -0.5% (0.5% per loop)
-bool calibrateO = false;// FALSE - MQ131 doesn't get calibrated || TRUE -  MQ131 gets calibrated the first time
+bool calibrateO = true;// FALSE - MQ131 doesn't get calibrated || TRUE -  MQ131 gets calibrated the first time
 
 
 
@@ -91,14 +92,22 @@ void message_sent_ok();
 // Message failed to send
 void message_sent_error();
 
-//EXTRA
+
+//EXTRA -- ADDED
 // Parse Data 
 String getValue(String data, char separator, int index);
 
 // Get number of separators (used for integrity)
 int countCheck(String data, char separator);
 
+// Reset sensorsValues
+void resetValues();
 
+// Build MSG String
+String buildMSG(String lat,String lon);
+
+// UPDATE GW LISTS
+void updateGWList(String key);
 
 /* Defining Functions */
 
@@ -107,7 +116,7 @@ String read_data_from_sensor() // was String
   float DHTValues[2] = {0.00,0.00}; //DHTValues is a buffer array used to avoid duplicate reading from DHT22.. Basically, we execute readTemp() and readHum() before 
                                      //readBenzene() so we can just keep them  in this array and pass them as parametres later. This should solve the problem. 
                                      //We only need a two values array, we initialize it at (0,00;0,00) first value.. TEMP, second value... HUM
-  String GPSValues[2] = {"",""}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
+  String GPSValues[2] = {"-","-"}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
   if(sensorsActiveFlags[0]){
     statoPM = String(readPM(), 2); 
@@ -135,8 +144,8 @@ String read_data_from_sensor() // was String
     sensorsValues[3] = statoO; //EXTRA ALTERNATIVE
   }
   
-  if(sensorsActiveFlags[4]){
-    statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 2); 
+  if(sensorsActiveFlags[4] and (sensorsActiveFlags[1] and sensorsActiveFlags[2])) {  //Benzene reliable read depends on having the temperature and humidity data, so if we skip Temp or Hum read, we also skip Benzene.
+    statoB = String(readBenzene(DHTValues[0],DHTValues[1]), 2);  //since we reach this point only if we are reading dht sensor too, then it would be correct to don't use DHTValues[]
     sensorsValues[4] = statoB; //EXTRA ALTERNATIVE
   }
 
@@ -157,14 +166,18 @@ String read_data_from_sensor() // was String
 
   }
 
-  String msg = "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " +  "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
-  //String msg = "Temperature:" + statoT + "°C " + "Humidity:" + statoH + "% " + "PM10:" + sensorsValues[0] + "pcs/0.01cf " + "Ozone:" + statoO + "ppm " + "Benzene:" + statoB + "ppm " + "Ammonia:" + statoAM + "ppm " + "Aldehydes:" + statoAL + "ppm " + "Latitude: " + GPSValues[0] + "° " + "Longitude: " + GPSValues[1] + "° " + "Battery: " + battery + "% ";
+  Serial.println(gwAdded); //extra debug string to remove
+  Serial.println(gw); //extra debug string to remove later
+  Serial.println(listAppKey[1]); //check if we got the simulated app key
+  /*ALTERNATIVE 1 => [VALUE,VALUE,VALUE] */
+  String msg = sensorsValues[0] + '|' + sensorsValues[1] + "|" +  sensorsValues[2] + "|" + sensorsValues[3] + "|" +  sensorsValues[4] + "|" +  sensorsValues[5] + "|" +  sensorsValues[6] + "|" + GPSValues[0] + "|" + GPSValues[1] + "|" + battery;
   battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
-  /*ALTERNATIVA
-  String msg = buildMSG();
+  resetValues();
+  /*ALTERNATIVE 2 =>  [NAME:VALUE|]
+  String msg = buildMSG(GPSValues[0],GPSValues[1]);
   battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25);
   resetValues();
-  */ 
+  */
   //if (battery < 20.00){
     //lowBattery = true;
   //}
@@ -207,14 +220,15 @@ String exchange_data_with_gateway()
     
   //print in the console what we receive from the gateway just for debugging.
   Serial.println();
-  Serial.print("Received: ");
-
+  Serial.println("Received downlink message correclty..");
+  String resultD = rcv; //convert char[64] to string
   //return string received from the gateway (rcv)
-  return rcv;
+  return resultD;
 }
 
 
-
+//DOWNLINK PARSING 
+// OLD VERSION to parse conf_data 
 void set_conf_data(String cd)
 {
   // indice iniziale, posto all'inizio della stringa
@@ -266,61 +280,102 @@ void set_conf_data(String cd)
 }
 
  
-// NEW VERSION of set_conf_data JUST FOR SIMULATION PURPOSES
-void set_conf_data_SIM(String data)  //SPLIT THE STRING BY ',' 
+// NEW VERSION .... NOT SIMULATED...
+void set_conf_data_SIM(String data)  //WE HAVE THREE DIFFERENT TYPE OF DOWNLINK [CONF;ADD;REM] CONF STARTS WITH A NUMBER... ADD  STARTS WITH 'A'... REM STARTS WITH 'R'
 {
- String part2 = data.substring(16); //we create a substring of data.  EX: DATA is [1,1,1,1,1,1,1,0,50000,80000] => PART2 is [50000,80000]
- String tts = ""; //since we do not know the lenght of tts  we build it by reading them. They might have 4,5,6 characters so we build a dynamic string
- String ttr = ""; //since we do not know the lenght of ttr  we build it by reading them. They might have 4,5,6 characters so we build a dynamic string
- bool over = false; //this flag let us know when have read the whole tts and we should start with ttr;
- int result = 0;
- 
- /* DEBUG STRINGS
- Serial.print("Pre Splitting: " + data + "   LENGTH: ");
- Serial.println( data.length()); */
- if (!((data.length() < 24 || data.length() > 35) && (countCheck(data,',') < 9))){  //part 1: edit this condition value (sx = 24, dx = 35) like this: -add sensors (+2 dx), -remove sensors (-2 sx) .... part 2 : for each sensor we expect "0/1" and ',' so assuming Z = nSensors + 1 .. it should be always be verified data.count(',')> Z
- for (int i = 0; i < 17 ; i = i +2){
-   //First 8 Sensors states (PM10,TEMP,HUM,OZONE,BENZENE,AM,AL,GPS)
-   if (i < 16) {
-    result=data.substring(i,i+1).toInt();
-    if (result == 0) {
-       sensorsActiveFlags[i/2]  = false;
-    }  
-    else{
-       sensorsActiveFlags[i/2] = true;
-    }
-    Serial.println("State of " + sensorsNames[i/2] + " sensor => "  + sensorsActiveFlags[i/2]);
-    //Serial.println(getSensInfos[i/2]);
-   }
-   //tts
-   if(i>15) { //LAST CYCLE --- I only need to read the last two values which are stored in "part2"
-    for (int j = 0; j < part2.length(); j++){ 
-      if (over == false){
-        if(part2[j] == ','){
-          over = true;
-        } 
-        else{
-          tts += part2[j];
-        } 
+  delay(4500);
+  if (data[0] == '1' or data[0] == '0' ){ // ---------------------- CONF TYPE DOWNLINK... WORKING 100% --------------------------------
+    
+    String part1 = ""; //Splitted String
+    int seps = countCheck(data,'|'); //count separators
+    for (int k = 0 ; k  <= seps; k++){  // for each "|" separator we divide in two 
+      if (k < seps){
+      part1 = data.substring(0,data.indexOf("|"));
+      data = data.substring((data.indexOf("|") + 1));
       }
-      else{
-        ttr += part2[j];
+      else {
+        part1 = data; //if it's the last iteraton of the parsing we only need to set part1 = data since we won't have another | "
       }
-
-    }
-    Serial.println("tts => " + tts);
-    timetosend = tts.toInt();
-    Serial.println("ttr => " + ttr);
-    timetoreceive = ttr.toInt();
-   }
- }
- }
- else{
-  Serial.println("Configuration String is incorrect, please retry..");
- }
-}
   
+  
+      Serial.println(part1); //debug purposes
+      Serial.println(data); //debug purposes
+  
+      if (k < 8){
+        if ((part1.toInt() == 1) or (part1.toInt() == 0)){
+          sensorsActiveFlags[k] = part1.toInt();
+        } 
+      }
+      if (k == 8){
+        if ((part1.toInt() > 10000) and (part1.toInt() < 200000)){
+          timetosend = part1.toInt() ; 
+        }
+      }
+      if (k == 9) {
+        if ((part1.toInt() > 10000) and (part1.toInt() < 200000)){
+        timetoreceive = part1.toInt() ; 
+        }
+      }
+    }
+  }
+  if (data[0] == 'A'){ //---------------------ADD DOWNLINK TYPE STRING -----------------------------------
+    String keyGW = data.substring((data.indexOf("|") + 1)); //we get only the key like this
+    Serial.println("Extracted Value is: " + keyGW);
+    delay(2000);
+    updateGWList(keyGW);
+  }
+  if (data[0] == 'R'){ //----------------------REM DOWNLINK TYPE STRING : FUTURE IMPLEMENTATIONS --------
+    String keyGW = data.substring((data.indexOf("|") + 1)); //we get only the key like this
+    Serial.println("Extracted Value is:" + keyGW);
+    //We need a function
+  }
+  
+  //Serial.println(" INVALID DOWNLINK MESSAGE... ");
+  return;
+}
 
+
+/*
+void set_conf_data_SIM2(String data)
+{
+  String part1 = ""; // pre part to split
+  int seps = countCheck(data,'|');
+  //String divided[seps];  we may not use this
+  for (int k = 0 ; k  <= seps; k++){
+
+
+    if (k < seps){
+    part1 = data.substring(0,data.indexOf("|"));
+    data = data.substring((data.indexOf("|") + 1));
+    }
+    else {
+      part1 = data;
+    }
+
+
+    Serial.println(part1); //debug purposes
+    Serial.println(data); //debug purposes
+    Serial.println(part1.substring((part1.indexOf(":") + 1)).toInt()); //debug
+
+
+    if (k < 8){
+      if ((part1.substring((part1.indexOf(":") + 1)).toInt() == 1) or (part1.substring((part1.indexOf(":") + 1)).toInt() == 0)){
+        sensorsActiveFlags[k] = part1.substring((part1.indexOf(":") + 1)).toInt() ;
+      } 
+    }
+    if (k == 8){
+      if ((part1.substring((part1.indexOf(":") + 1)).toInt() > 10000) and (part1.substring((part1.indexOf(":") + 1)).toInt() < 200000)){
+        timetosend = part1.substring((part1.indexOf(":") + 1)).toInt() ; 
+      }
+    }
+    if (k == 9) {
+      if ((part1.substring((part1.indexOf(":") + 1)).toInt() > 10000) and (part1.substring((part1.indexOf(":") + 1)).toInt() < 200000)){
+      timetoreceive = part1.substring((part1.indexOf(":") + 1)).toInt() ; 
+      }
+    }
+  }
+}
+*/
 
 void modem_start_err()
 {
@@ -392,26 +447,80 @@ int countCheck(String data, char separator)
 
 //resetValues: after each cycle it automatically resets the sensorsValues array.
 void resetValues(){
-  for (i= 0; i < sensorsValues.lenght(); i++){
+  for (int i= 0; i < 7 ; i++){  //change 7
     sensorsValues[i] = "-";
   }
 }
 
 //buildMSG:
-String buildMSG(){
+String buildMSG(String lat, String lon){
   String ms = ""; //initialize ms
   //Sensors - GPS
-  for (i = 0; i< sensorsValues.lenght()-1;i++){
+  for (int i = 0; i < 6 ;i++){  //change 6
     ms = ms + getSensInfos(i);
   }
   //GPS
-  ms = ms + "Latitude:"+GPSValues[0]+"|"+"Longitude:"+GPSValues[1]+"|";
+  ms = ms + "Latitude:"+lat+"|"+"Longitude:"+lon+"|";
   //Battery
   ms = ms + "Battery:"+battery+"|";
   //other to add... power signal.. gateway communicating to..?
   Serial.println(ms);
   return ms;
 }
+
+
+//in this foo (called by the arrival of a "specific downlink" (since we have two types of DOWNLINK (CONFIGURATION and ADDGATEWAY and REMOVEGATEWAY) - check if we have room to store it (<= MAXGW) )
+void updateGWList(String key){
+  Serial.println(gwAdded);
+  //Serial.println(MAXGW);
+  delay(2000);
+  if (gwAdded < 4){ //WE CAN ADD A GATEWAY IF WE HAVEN'T ADD MORE THAN MAXGW ... substitute 4 with MAXGW
+    if (gwAdded == 0){
+      listAppEui[gwAdded] = "00000000000000000000000000000000";
+      listAppKey[gwAdded] = SECRET_APP_KEY;
+      delay(1000);
+      gwAdded++;
+    }
+    delay(1000);
+    listAppEui[gwAdded] = "00000000000000000000000000000000";
+    listAppKey[gwAdded] = key;
+    gwAdded++;
+    delay(2000);
+    Serial.println("Updated list of gateways");
+    return;
+  }
+  else{
+    Serial.println("Please remove one of the gateways ... With a downlink messagge type REMOVEGATEWAY");
+    return;
+  }
+  
+}
+
+
+// in this foo we will check if it's the time to connect to a different gateway.
+/*
+void statusGW(){
+  if (gwFails > 3){
+    gw++; //change active gateway
+    if (listAppEui[gw%MAXGW] == ""){
+      statusGW(); //if next element of gw is empty then we re-do the function until we find a gateway where we can connect
+    }
+    else{
+      int connected = connect_to_gateway(listAppEui[gw%MAXGW],listAppKey[gw%MAXGW]) //connect_to_gateway...
+      if(!connected){
+        connect_to_gateway_message_error();
+        gwFails = 4;
+        statusGW();
+      }
+      gwFails = 0;
+      Serial.println(" Arduino  => Connected to gateway = " + gw);
+      modem.minPollInterval(60);  
+      return;
+    }
+  }
+  return;
+}
+*/
 
 
 

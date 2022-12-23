@@ -13,7 +13,7 @@ DHT dht = DHT(dataPinTU, DHTType); //create the sensor object
 // DHT22 (Temp):
 float readTemp(){
   dht.begin();
-  Serial.println("DHT22 => Detecting temperature.. ");
+  Serial.println("DHT22 => Detecting Temperature.. ");
   delay(2000); //refresh rate is 2 sec.
   float t = dht.readTemperature(); 
   return t;

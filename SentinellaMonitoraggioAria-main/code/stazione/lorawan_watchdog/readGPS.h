@@ -28,7 +28,7 @@ String combine = ""; //since we cannot pass an array as function result, we pass
 //FUNCTUIN
 String readGPS(){
 
-  Serial.println(" GPS => Trying to get location..");
+  Serial.println("GPS => Trying to get your location..");
   gpsSerial.begin(9600); //initialize gps serial.
   delay(3000); //we may reduce this to 2s.
   Serial.println(gpsSerial.available()); //Print for debug purposes. if gpsSerial return 0 a good practice might be to use last known location.
@@ -48,8 +48,9 @@ String readGPS(){
        }
       else{
           Serial.println(F("INVALID"));
+         
       }
-
+     return "-|-";
     }
   }
 
