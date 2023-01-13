@@ -20,7 +20,6 @@ float readBenzene(float Temp, float Hum){
   //MQ135 mq135_sensor(PIN_MQ135, rzero);
   Serial.println("MQ135 => Detecting Benzene..  ");
 
-
   //Change the values between parenthesis in the following section with the values passed as parametres.
   float correctionFactor = mq135_sensor.getCorrectionFactor(Temp, Hum);
   float rload = mq135_sensor.getResistance();

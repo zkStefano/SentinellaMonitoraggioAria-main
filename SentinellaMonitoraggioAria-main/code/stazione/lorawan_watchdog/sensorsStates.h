@@ -16,9 +16,7 @@ bool sensorsActiveFlags[] = {true,true,true,false,true,true,false,true}; //This 
 String sensorsNames[] = {"PM10","Temperature","Humidity","Ozone","Benzene","Ammonia","Aldehydes","GPS"};
 String sensorsUnits[] = {"°C","%","pcs/0.01cf","ppm","ppm","ppm","ppm","°"};
 String sensorsValues[] = {"-","-","-","-","-","-","-","-"}; //this may substitute every statoX variable. it contains for each sensor the value read.
-//I'm trying this last one array by assigning the value of PM10 in function read_from_sensors()
-//Modified: in PM10 part in read_from_sensors() added "sensorsValues[0]=statoPM;"
-//in MSG: "....... PM10 + sensorsValues[0]";
+
 
 String getSensInfos(int k){
     String result = sensorsNames[k] + ":" + sensorsValues[k] +"|";

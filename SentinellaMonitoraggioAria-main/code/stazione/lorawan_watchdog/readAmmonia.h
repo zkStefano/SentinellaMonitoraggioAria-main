@@ -4,7 +4,6 @@
 #include <Arduino.h> // 
 
 #define dataPinA A1 // pin connected to the Arduino Board
-
 #define RL 47  // Resistance of RL is 47 kohm
 #define M -0.263 // Angular coefficent 
                  // Points: (x1;y1) e (x2;y2) --> (40;1) e (100;0.8) 

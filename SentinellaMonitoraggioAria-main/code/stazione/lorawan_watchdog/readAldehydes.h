@@ -1,10 +1,11 @@
 #ifndef readAldehydes_h
 #define readAldehydes_h
 
+
 #include <Arduino.h> 
 
-#define dataPinA A3 // pin connected to the Arduino board
 
+#define dataPinA A3 // pin connected to the Arduino board
 #define RL 20  // Resistance of RL is 47 kohm
 #define M -0.447 // // Angular coefficent
                  // Points: (x1;y1) e (x2;y2) --> (397.27;1.50) e (1005.26;0.99) 
@@ -12,7 +13,7 @@
                // Poibt: (x;y) --> (700.0072;1.1679)
 #define Ro 4.10 //  Ro value (calculated with the proper program)
 
-// MQ137:
+// MQ137
 float readAldeidi(){
   float analog_value; // we will need the average value of analog reads of the sensor, to convert later on in Voltage (tensione).
   float VRL; // Voltage in RL
