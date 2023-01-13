@@ -59,5 +59,5 @@ Il codice ha bisogno di rifinitura e pulizia in alcune parti, di rimozione delle
 
 ## Crediti
 Il progetto (lato sentinella) è stato realizzato da Stefano Cattaneo, partendo dal codice realizzato prima da Samuel Locatelli e poi da Matteo Pettovello.
-Il lato server (gateway + application server) viene sviluppato e gestito da Filippo Barbieri e Lorenzo Mazzola
+Il lato server (gateway + application server) viene sviluppato e gestito da Filippo Barbieri e Lorenzo Mazzoleni
 Il tutto coordinato dalla professoressa Patrizia Scandurra.
