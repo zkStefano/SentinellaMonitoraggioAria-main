@@ -58,4 +58,6 @@ Avevo previsto anche il ricevimento di altri due possibili tipi di downlink.
 Il codice ha bisogno di rifinitura e pulizia in alcune parti, di rimozione delle vecchie variabili, però è funzionante.
 
 ## Crediti
-Il progetto è stato realizzato da Stefano Cattaneo, partendo dal codice realizzato prima da Samuel Locatelli e poi da Matteo Pettovello, sotto coordinazione della Prof.ssa Scandurra.
+Il progetto (lato sentinella) è stato realizzato da Stefano Cattaneo, partendo dal codice realizzato prima da Samuel Locatelli e poi da Matteo Pettovello.
+Il lato server (gateway + application server) viene sviluppato e gestito da Filippo Barbieri e Lorenzo Mazzola
+Il tutto coordinato dalla professoressa Patrizia Scandurra.
