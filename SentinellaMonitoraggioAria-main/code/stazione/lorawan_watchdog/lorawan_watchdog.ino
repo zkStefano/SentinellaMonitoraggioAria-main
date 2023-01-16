@@ -71,7 +71,6 @@ void setup() {
   Serial.println("Arduino => Connected to gateway...."); //means we are online
   modem.minPollInterval(60);  // Set polling interval to 60 s
   Serial.println();
-  Serial.println();
   }
   
 }

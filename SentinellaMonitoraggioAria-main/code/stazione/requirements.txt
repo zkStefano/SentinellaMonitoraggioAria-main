@@ -1,0 +1,5 @@
+# libraries to install for arduino
+DHT Sensor Library
+MQ 131 gas sensor
+MQ 135
+TinyGPSPlus

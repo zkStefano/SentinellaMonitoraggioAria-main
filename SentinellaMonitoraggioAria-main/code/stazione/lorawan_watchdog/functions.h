@@ -128,7 +128,9 @@ String read_data_from_sensor()
   }
 
   String msg = sensorsValues[0] + '|' + sensorsValues[1] + "|" +  sensorsValues[2] + "|" + sensorsValues[3] + "|" +  sensorsValues[4] + "|" +  sensorsValues[5] + "|" +  sensorsValues[6] + "|" + GPSValues[0] + "|" + GPSValues[1] + "|" + battery;
-  battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
+  //battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
+  //battery = battery - (random(1000, 2000) / 100.0); // randomizza lo scaricamento tra float -10 e -20
+  battery = 45;
   resetValues();
   return msg;
 }
@@ -150,10 +152,14 @@ int connect_to_gateway(String ae, String ak)
 
 String exchange_data_with_gateway()
 { 
+  Serial.println();
   if (!modem.available()) //if there is no available data, return an empty string. 
   {
-    Serial.println();
-    Serial.println("No downlink message available at the moment..");
+    Serial.print("No downlink message available at the moment...");
+    Serial.print(" time to send: ");
+    Serial.print(timetosend);
+    Serial.print(" - time to receive: ");
+    Serial.println(timetoreceive);
     return "";
   }
   //if some data is available...
