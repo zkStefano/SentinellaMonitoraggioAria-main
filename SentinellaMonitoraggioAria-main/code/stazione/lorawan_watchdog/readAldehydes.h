@@ -13,7 +13,8 @@
                // Poibt: (x;y) --> (700.0072;1.1679)
 #define Ro 4.10 //  Ro value (calculated with the proper program)
 
-// MQ137
+
+//MQ138
 float readAldeidi(){
   float analog_value; // we will need the average value of analog reads of the sensor, to convert later on in Voltage (tensione).
   float VRL; // Voltage in RL

@@ -58,6 +58,7 @@ void setup() {
   previousMillisR = 0; // data reception
   
   /* CONNECTION TO GATEWAY */
+  /*
   int connected = 0; //set connected flag to false initially.. means we are offline.
   while (!connected){
     Serial.println("Arduino => Trying to connect with Gateway..");
@@ -71,7 +72,9 @@ void setup() {
   Serial.println("Arduino => Connected to gateway...."); //means we are online
   modem.minPollInterval(60);  // Set polling interval to 60 s
   Serial.println();
+  */
   }
+  
   
 }
 
@@ -86,9 +89,11 @@ void loop() { //read data from sensors --> msg --> conf-data
   if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
   {
     Serial.println();
-    Serial.println("----------------- CYCLE => " + String(cycle) + " -----------------" );
+    Serial.println("----------------- CYCLE : " + String(cycle) + " -----------------" );
     String msg = read_data_from_sensor();
     Serial.println(msg); //String version 
+    Serial.print("Total reading time at cycle " + String(cycle) + " : " );
+    Serial.println((currentMillis-previousMillisS));
     cycle++; 
     
    /* UPLINK DATA - PHASE 2 : SEND DATA TO GATEWAY */
@@ -102,7 +107,7 @@ void loop() { //read data from sensors --> msg --> conf-data
       message_sent_error(); //return error message
       lostPacket++; //increase error counter  
       delay(1500);
-      uplink_error_status(cycle,lostPacket);
+      uplink_error_status((cycle-1),lostPacket);
     }
 
     //to handle millis() rollover

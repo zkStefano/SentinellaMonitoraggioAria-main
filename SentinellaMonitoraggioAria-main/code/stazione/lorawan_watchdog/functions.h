@@ -263,6 +263,7 @@ void connect_to_gateway_message_error()
 void message_sent_ok()
 {
   Serial.println("Message succesfully sent!");
+  return;
 }
 
 void message_sent_error()
@@ -270,15 +271,28 @@ void message_sent_error()
   Serial.println("Error sending the message...  ");
   Serial.println("Remember: You can send a limited number of message per minute, basing on your signal power!");
   Serial.println("Your signal power may range from 1 msg every few seconds to 1 msg per minute.");
+  return;
 }
 
+//Bug : this function is not working correctly. Prints are working in an unexpected way, printing half of the string. Hypotetic solution: Insert this part of code directly in lorawan_watchdog ino
 void uplink_error_status(int c, int e)
 {
-  Serial.println("Uplink situation: ");
+  int k = c-e; 
+  float ratioCorr = k/c; // percentage of uplink messages sent
+  float ratioErr = e/c; // percentage of uplink messages not sent
+  Serial.println(k);
+  Serial.println("Uplink summary at cycle : " + String(c));
   delay(2000);
-  Serial.println("Total cycles until now: " + c);
-  Serial.println("Correct uplink message sent: " + (c-e));
-  Serial.println("Errors " + e);
+  Serial.println("Total cycles until now : " + String(c));
+  delay(2000);
+  Serial.println("Correct uplink message sent: " + String(k));
+  delay(2000);
+  Serial.println("Errors : " + String(e));
+  delay(2000);
+  Serial.println("Error Ratio : " + String(ratioErr));
+  delay(2000);
+  Serial.println("Sent Ratio: " + String(ratioCorr));
+  return;
 }
 
 String getValue(String data, char separator, int index)

@@ -11,7 +11,8 @@
                // Point: (x;y) --> (70;0.75)
 #define Ro 30 // Ro value (calculated with the proper program)
 
-// MQ137:
+
+// MQ137
 float readAmmoniaca(){
   float analog_value; // We will need the average value of analog reads of the sensor, to convert later on in Voltage (tensione)
   float VRL; // Voltage in RL
