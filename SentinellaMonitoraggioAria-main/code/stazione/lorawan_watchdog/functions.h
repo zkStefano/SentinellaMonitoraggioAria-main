@@ -262,7 +262,7 @@ void connect_to_gateway_message_error()
 
 void message_sent_ok()
 {
-  Serial.println("Message succesfully sent!");
+  Serial.println("Message successfully sent!");
   return;
 }
 

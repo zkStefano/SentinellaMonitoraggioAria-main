@@ -21,17 +21,18 @@ uint32_t latitudeBinary, longitudeBinary;
 uint16_t altitudeGps;
 uint8_t hdopGps;
 
+//Result variables
 float lat = 0.00;
 float lon = 0.00;
 String combine = ""; //since we cannot pass an array as function result, we pass a string back to functions and then we split there the values.
 
-//FUNCTUIN
+//GPS:
 String readGPS(){
 
   Serial.println("GPS => Trying to get your location..");
   gpsSerial.begin(9600); //initialize gps serial.
-  delay(3000); //we may reduce this to 2s.
-  Serial.println(gpsSerial.available()); //Print for debug purposes. if gpsSerial return 0 a good practice might be to use last known location.
+  delay(2000);
+  //Serial.println(gpsSerial.available());  <<--  Print for debug purposes. if gpsSerial return 0 a good practice might be to use last known location.
   while (gpsSerial.available() > 0) {
     if (gps.encode(gpsSerial.read())) {
       
@@ -53,14 +54,9 @@ String readGPS(){
      return "-|-";
     }
   }
-
- 
-  
-
+  return "-|-";
 }
 
 #endif
 
 // https://forum.arduino.cc/t/tinygps-location-problem/422301/7
-
-//NOTES: Now the gps module is working!! But gpsSerial should be initialized in lorawan_watchdog.ino right?

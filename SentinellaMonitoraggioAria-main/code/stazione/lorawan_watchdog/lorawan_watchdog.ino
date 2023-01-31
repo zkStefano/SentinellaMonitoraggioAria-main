@@ -57,8 +57,8 @@ void setup() {
   previousMillisS = 0; // send 
   previousMillisR = 0; // data reception
   
-  /* CONNECTION TO GATEWAY */
-  /*
+  /* CONNECTION TO GATEWAY */ 
+  /* DEACTIVATE THIS BLOCK OF CODE IF YOU WOULD LIKE TO TEST ONLY THE SENSORS */
   int connected = 0; //set connected flag to false initially.. means we are offline.
   while (!connected){
     Serial.println("Arduino => Trying to connect with Gateway..");
@@ -72,7 +72,6 @@ void setup() {
   Serial.println("Arduino => Connected to gateway...."); //means we are online
   modem.minPollInterval(60);  // Set polling interval to 60 s
   Serial.println();
-  */
   }
   
   
