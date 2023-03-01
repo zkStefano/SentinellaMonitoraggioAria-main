@@ -37,8 +37,10 @@ int timetoreceive;
 /* OTHER VARIABLES DECLARATION*/
 int cycle = 1;  //Just for debug purposes.
 int lostPacket = 0; //Counts how many packets have not been transmitted from the watchdog to the gateway
-
-
+int failedConnection = 0; //We count every time we fail to connect to a gateway
+int failedTriesConnection = 0;  // Only in setup * to implement* 
+int connected = 0;
+int notSentStreak =0;
 
 /* SETUP FUNCTION - Initialization of Modem and Variables + Connection */
 void setup() {
@@ -59,17 +61,22 @@ void setup() {
   
   /* CONNECTION TO GATEWAY */ 
   /* DEACTIVATE THIS BLOCK OF CODE IF YOU WOULD LIKE TO TEST ONLY THE SENSORS */
-  int connected = 0; //set connected flag to false initially.. means we are offline.
-  while (!connected){
+  delay(10000);
+  Serial.println("Pre to While");
+  while (failedTriesConnection < 3 and !(connected)) { //We exit this while loop if we connect or we have tried at least 3 times.
     Serial.println("Arduino => Trying to connect with Gateway..");
     connected = connect_to_gateway(appEui, appKey); //we get 1 or 0 ... 1 means succesfully connected / 0 means we could not reach a gateway
-  if (!connected) 
-  {
-    connect_to_gateway_message_error(); //print out error
-    delay(60000); //we try to reconnect after 60 seconds, and we repeat this 'while' block of code.
+    if (!connected) 
+    {
+      connect_to_gateway_message_error(); //print out error
+      failedTriesConnection++;
+      delay(60000); //we try to reconnect after 60 seconds, and we repeat this 'while' block of code.
+    }
   }
-  }
+  if (connected) {
   Serial.println("Arduino => Connected to gateway...."); //means we are online
+  connected = 1;
+  }
   modem.minPollInterval(60);  // Set polling interval to 60 s
   Serial.println();
   }
@@ -91,26 +98,54 @@ void loop() { //read data from sensors --> msg --> conf-data
     Serial.println("----------------- CYCLE : " + String(cycle) + " -----------------" );
     String msg = read_data_from_sensor();
     Serial.println(msg); //String version 
-    Serial.print("Total reading time at cycle " + String(cycle) + " : " );
-    Serial.println((currentMillis-previousMillisS));
+    //See Cycle time
+    //Serial.print("Total reading time at cycle " + String(cycle) + " : " );
+    //Serial.println((currentMillis-previousMillisS));
     cycle++; 
     
    /* UPLINK DATA - PHASE 2 : SEND DATA TO GATEWAY */
-    int err = send_data_to_gateway(msg); //change to msg then
-    if (err > 0)  // Check error code
-    {
-      message_sent_ok(); //message sent succesfully print 
-    } 
-    else 
-    {
-      message_sent_error(); //return error message
-      lostPacket++; //increase error counter  
-      delay(1500);
-      uplink_error_status((cycle-1),lostPacket);
+    Serial.println(connected);
+    if (!(connected)) {
+      notSentStreak = 0;  //If we are not connected means that streak is 0.
+      modem.restart(); //we need to restart the modem because we have disconnected
+      gatewayConnection();
+      Serial.println(connected);
+      if(connected){
+        modem.minPollInterval(60);
+      }
+      if (!(connected)) { //means that we are not connected again after retrying 1 time
+        //msg is not sent.. update notSent.txt
+      }
+      if (failedConnection == 10){ //change to 1 for debug, 10 for execution -- after 10 failed 
+        Serial.println("Terminating script..");
+        exit(0); //Stop the script from working
+      }
     }
-
-    //to handle millis() rollover
-    previousMillisS = currentMillis;
+    if(connected){
+      failedConnection = 0;
+      int err = send_data_to_gateway(msg); //change to msg then
+      if (err > 0)  // Check error code
+      {
+        message_sent_ok(); //message sent succesfully print 
+      } 
+      else 
+      {
+        message_sent_error(); //return error message
+        lostPacket++; //increase error counter (Sum)
+        notSentStreak++;  
+        delay(1500);
+        float tmpCycle = float(cycle-1);
+        float tmpLostPacket = float(lostPacket);
+        uplink_error_status(tmpCycle,tmpLostPacket);
+        if(notSentStreak == 3){
+          connected = 0; //last one
+        }
+        //message hasn't been sent... update notSent.txt
+      }
+  
+      //to handle millis() rollover
+      previousMillisS = currentMillis;
+    }
   }
   
   /* DOWNLINK DATA */

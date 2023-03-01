@@ -18,9 +18,14 @@
 
 /* EXTERN VARIABLES -- IMPORTED FROM LORAWAN_WATCHDOG.INO*/
 
+extern String appEui;
+extern String appKey;
 extern LoRaModem modem; 
 extern int timetosend; 
 extern int timetoreceive;
+extern int connected;
+extern int failedConnection;
+extern int failedTriesConnection;
 
 /* Variables + Initiliazing Values */
 String statoGPS = "0"; //Get Latitude and Longitude combined. 
@@ -76,6 +81,11 @@ void resetValues();
 // Build uplink message string
 String buildMSG(String lat,String lon);
 
+// Critical value check/Outlier check
+void checkCritical(int pos); //position posizione
+
+// Connection during loop() if: (1). we have not connected at the beginning; (2). we have disconnected <--- how? 3 missed uplinks(?)
+void gatewayConnection();
 
 
 /* Defining Functions */
@@ -89,16 +99,20 @@ String read_data_from_sensor()
 
   if(sensorsActiveFlags[0]){
     sensorsValues[0] = String(readPM(), 2); 
+    checkCritical(0);
+    
   }
   
   if(sensorsActiveFlags[1]){
     DHTValues[0] = readTemp() ; 
     sensorsValues[1] = DHTValues[0]; 
+    checkCritical(1);
   }
 
   if(sensorsActiveFlags[2]){
     DHTValues[1]= readHum() ;
     sensorsValues[2] = DHTValues[1]; 
+    checkCritical(2);
   }
 
   if(sensorsActiveFlags[3]){
@@ -107,18 +121,22 @@ String read_data_from_sensor()
       calibrateO = false; 
     }
     sensorsValues[3] = String(readOzono(calibrateO), 2);
+    checkCritical(3);
   }
   
   if(sensorsActiveFlags[4] and (sensorsActiveFlags[1] and sensorsActiveFlags[2])) {  //Benzene reliable read depends on having the temperature and humidity data, so if we skip Temp or Hum read, we also skip Benzene.
-    sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 2);  
+    sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 2); 
+    checkCritical(4); 
   }
 
   if(sensorsActiveFlags[5]){
     sensorsValues[5] = String(readAmmoniaca(), 2);
+    checkCritical(5);
   }
   
   if(sensorsActiveFlags[6]){
     sensorsValues[6] = String(readAldeidi(), 2); 
+    checkCritical(6);
   }
 
   if(sensorsActiveFlags[7]){ 
@@ -275,9 +293,9 @@ void message_sent_error()
 }
 
 //Bug : this function is not working correctly. Prints are working in an unexpected way, printing half of the string. Hypotetic solution: Insert this part of code directly in lorawan_watchdog ino
-void uplink_error_status(int c, int e)
+void uplink_error_status(float c, float e)
 {
-  int k = c-e; 
+  float k = c-e;  //korrekt
   float ratioCorr = k/c; // percentage of uplink messages sent
   float ratioErr = e/c; // percentage of uplink messages not sent
   Serial.println(k);
@@ -342,6 +360,45 @@ String buildMSG(String lat, String lon){
   //other to add... power signal.. gateway communicating to..?
   Serial.println(ms);
   return ms;
+}
+
+//Check Critical Value and Outliers Values
+void checkCritical(int pos){
+  //check if its outlier 
+  if (((sensorsValues[pos].toFloat()) < (-100*sensorsAlerts[pos])) or ((sensorsValues[pos].toFloat()) > (100 * sensorsAlerts[pos]))){
+    Serial.println(sensors[pos] + " -> " + "Outlier value detected for sensor " + sensorsNames[pos] + ": " + String(sensorsValues[pos]));
+    //Update outliers.txt
+    return;
+  }
+  //check if its critical
+  else if (sensorsValues[pos].toFloat() > sensorsAlerts[pos]){ //LOWER ALERTS
+    if (sensorsValues[pos].toFloat() > sensorsCriticalAlerts[pos]){
+      Serial.println(sensors[pos] + " -> " + "Critical value detected for sensor "  + sensorsNames[pos] + ": " + String(sensorsValues[pos]) +  "!!!!!!");
+      return;
+    }
+    Serial.println(sensors[pos] + " -> " + "High value detected for sensor "  + sensorsNames[pos] + ": " + String(sensorsValues[pos]));
+    return;
+  }
+  //it is not critical
+  return;
+}
+
+
+//Connect to a gateway --
+void gatewayConnection(){
+  Serial.println("Arduino => Trying to connect with Gateway.."); //If we are in this block it means we are not connected.
+  connected = connect_to_gateway(appEui, appKey); //we get 1 or 0 ... 1 means succesfully connected / 0 means we could not reach a gateway
+  if (!connected) 
+  {
+    connect_to_gateway_message_error(); //print out error 
+    failedConnection++;
+    Serial.println("Cannot reach a nearby gateway..");
+    Serial.println("Connection fails: " + String(failedConnection)); 
+    return;
+    }
+  Serial.println("Arduino => Connected to gateway.."); //means we are online
+  Serial.println("Since we are connected we set to 0 failedConnections..");
+  return;
 }
 
 #endif
