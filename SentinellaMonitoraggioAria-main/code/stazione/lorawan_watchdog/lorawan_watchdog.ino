@@ -62,8 +62,7 @@ void setup() {
   /* CONNECTION TO GATEWAY */ 
   /* DEACTIVATE THIS BLOCK OF CODE IF YOU WOULD LIKE TO TEST ONLY THE SENSORS */
   delay(10000);
-  Serial.println("Pre to While");
-  while (failedTriesConnection < 3 and !(connected)) { //We exit this while loop if we connect or we have tried at least 3 times.
+  while (failedTriesConnection < 1 and !(connected)) { //We exit this while loop if we connect or we have tried at least 3 times.
     Serial.println("Arduino => Trying to connect with Gateway..");
     connected = connect_to_gateway(appEui, appKey); //we get 1 or 0 ... 1 means succesfully connected / 0 means we could not reach a gateway
     if (!connected) 
@@ -114,11 +113,11 @@ void loop() { //read data from sensors --> msg --> conf-data
         modem.minPollInterval(60);
       }
       if (!(connected)) { //means that we are not connected again after retrying 1 time
-        //msg is not sent.. update notSent.txt
+        //
       }
       if (failedConnection == 10){ //change to 1 for debug, 10 for execution -- after 10 failed 
         Serial.println("Terminating script..");
-        exit(0); //Stop the script from working
+        //exit(0); //Stop the script from working
       }
     }
     if(connected){
