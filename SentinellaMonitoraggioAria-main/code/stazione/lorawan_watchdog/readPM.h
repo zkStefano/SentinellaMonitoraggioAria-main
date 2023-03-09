@@ -22,9 +22,23 @@ float readPM(){
   }
   ratio = lowpulseoccupancy/(sampletime_ms*10.0);  // Percentage 0-100 (Integer value)
   concentration = 1.1*pow(ratio,3)-3.8*pow(ratio,2)+520*ratio+0.62; // According to the graph on the instructions.
+
+  //EXTRA TO GET ugm3
+  double r10 = 2.6*pow(10,-6);
+  double pi = 3.14159;
+  double vol10 = (4/3)*pi*pow(r10,3);
+  double density = 1.65 * pow(10,12); // we assume 1.65 as density of particle
+  double mass10 = density * vol10;
+  double K = 3531.5;
+  float concLarge = concentration*K*mass10;
+  //Serial.println(concLarge); debug
+
+  //RESET
   lowpulseoccupancy = 0;
   starttime = millis();
-  return concentration;
+  //return concentration; old way
+  
+  return concLarge;
 }
 
 #endif

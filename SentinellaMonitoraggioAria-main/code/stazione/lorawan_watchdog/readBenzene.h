@@ -28,7 +28,9 @@ float readBenzene(float Temp, float Hum){
   float correctedRZero = mq135_sensor.getCorrectedRZero(Temp, Hum);
   float resistance = mq135_sensor.getResistance();
   float ppm = mq135_sensor.getPPM();
+  //Serial.println(ppm);
   float correctedPPM = mq135_sensor.getCorrectedPPM(Temp, Hum);
+  //Serial.println(correctedPPM);
 
   delay(2000);
   return correctedPPM;

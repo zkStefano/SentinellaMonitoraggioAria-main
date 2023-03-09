@@ -14,14 +14,17 @@ float readOzono(bool calibrate){
   // Resistance RL of 1MOhms (1000000 Ohms)
   
   MQ131.begin(2, dataPinO, LOW_CONCENTRATION, 1000000); 
-  
-  if (calibrate){
-  Serial.println("MQ131 => Calibration MQ131 in progress...");
-  MQ131.calibrate();
-  Serial.println("MQ131 => Calibration done!");
-  }
 
   Serial.println("MQ131 => Detecting Ozone concentration.. ");
+
+  //CALIBRATE EVERY TIME BEST PRACTICE
+  //if (calibrate){
+  Serial.println("MQ131 => Calibration MQ131 in progress..");
+  MQ131.calibrate();
+  Serial.println("MQ131 => Calibration done!");
+  //}
+
+  
   // The calibration "fixes" 2 successive parameters: the value of R0 (base resistance) and the time required to warm up the sensor and obtain consistent and reliable readings
   
   //Serial.println("Sampling MQ131... ");
@@ -35,8 +38,11 @@ float readOzono(bool calibrate){
   MQ131.setEnv(sensorsValues[1].toInt(),sensorsValues[2].toInt());
   Serial.println("MQ131 => Setting environmental values");
   }
-  
-  return (MQ131.getO3(PPM)/1000000);
+ 
+
+  return MQ131.getO3(UG_M3);
+  //float ozone = (MQ131.getO3(UG_M3)/1000000);
+  //return ozone;
 }
 
 #endif

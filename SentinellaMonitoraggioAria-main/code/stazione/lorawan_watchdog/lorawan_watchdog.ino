@@ -62,7 +62,7 @@ void setup() {
   /* CONNECTION TO GATEWAY */ 
   /* DEACTIVATE THIS BLOCK OF CODE IF YOU WOULD LIKE TO TEST ONLY THE SENSORS */
   delay(10000);
-  while (failedTriesConnection < 1 and !(connected)) { //We exit this while loop if we connect or we have tried at least 3 times.
+  while (failedTriesConnection < 3 and !(connected)) { //We exit this while loop if we connect or we have tried at least 3 times.
     Serial.println("Arduino => Trying to connect with Gateway..");
     connected = connect_to_gateway(appEui, appKey); //we get 1 or 0 ... 1 means succesfully connected / 0 means we could not reach a gateway
     if (!connected) 

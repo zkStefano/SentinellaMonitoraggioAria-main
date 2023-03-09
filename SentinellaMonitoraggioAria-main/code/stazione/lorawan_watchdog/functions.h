@@ -187,7 +187,7 @@ String exchange_data_with_gateway()
   {
     rcv[i++] = (char)modem.read();
   }
-  Serial.println("Received downlink message correclty..");
+  Serial.println("Received downlink message correctly..");
   String resultD = rcv; //convert char[64] to string  and return string received from the gateway (rcv)
   return resultD;
 }
@@ -373,7 +373,7 @@ void checkCritical(int pos){
   //check if its critical
   else if (sensorsValues[pos].toFloat() > sensorsAlerts[pos]){ //LOWER ALERTS
     if (sensorsValues[pos].toFloat() > sensorsCriticalAlerts[pos]){
-      Serial.println(sensors[pos] + " -> " + "Critical value detected for sensor "  + sensorsNames[pos] + ": " + String(sensorsValues[pos]) +  "!!!!!!");
+      Serial.println(sensors[pos] + " -> " + "Alert! Critical value detected for sensor "  + sensorsNames[pos] + ": " + String(sensorsValues[pos]));
       return;
     }
     Serial.println(sensors[pos] + " -> " + "High value detected for sensor "  + sensorsNames[pos] + ": " + String(sensorsValues[pos]));
