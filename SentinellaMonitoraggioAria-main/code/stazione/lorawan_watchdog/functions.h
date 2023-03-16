@@ -125,7 +125,7 @@ String read_data_from_sensor()
   }
   
   if(sensorsActiveFlags[4] and (sensorsActiveFlags[1] and sensorsActiveFlags[2])) {  //Benzene reliable read depends on having the temperature and humidity data, so if we skip Temp or Hum read, we also skip Benzene.
-    sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 2); 
+    sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 5); 
     checkCritical(4); 
   }
 

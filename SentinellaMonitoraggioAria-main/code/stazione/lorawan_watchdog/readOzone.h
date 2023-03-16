@@ -39,7 +39,6 @@ float readOzono(bool calibrate){
   Serial.println("MQ131 => Setting environmental values");
   }
  
-
   return MQ131.getO3(UG_M3);
   //float ozone = (MQ131.getO3(UG_M3)/1000000);
   //return ozone;
