@@ -29,7 +29,7 @@ extern int failedTriesConnection;
 
 /* Variables + Initiliazing Values */
 String statoGPS = "0"; //Get Latitude and Longitude combined. 
-float battery = 100; // Simulate the battery draining via this variable
+int battery = 100; // Simulate the battery draining via this variable
 bool calibrateO = true;// FALSE - MQ131 doesn't get calibrated || TRUE -  MQ131 gets calibrated the first time
 
 
@@ -98,7 +98,7 @@ String read_data_from_sensor()
   String GPSValues[2] = {"-","-"}; //GPSValues will store Latitude and Longitude that we will get from the function readGPS() ((ADDED))
 
   if(sensorsActiveFlags[0]){
-    sensorsValues[0] = String(readPM(), 2); 
+    sensorsValues[0] = String(readPM(), 1); 
     checkCritical(0);
     
   }
@@ -116,26 +116,26 @@ String read_data_from_sensor()
   }
 
   if(sensorsActiveFlags[3]){
-    if(calibrateO){
-      sensorsValues[3] = String(readOzono(calibrateO), 2);  //with this if block we calibrate the Ozone sensor just on the first cycle.
+    /*if(calibrateO){
+      sensorsValues[3] = String(readOzono(calibrateO), 1);  //with this if block we calibrate the Ozone sensor just on the first cycle.
       calibrateO = false; 
     }
-    sensorsValues[3] = String(readOzono(calibrateO), 2);
-    checkCritical(3);
+    sensorsValues[3] = String(readOzono(calibrateO), 1);
+    checkCritical(3);*/
   }
   
   if(sensorsActiveFlags[4] and (sensorsActiveFlags[1] and sensorsActiveFlags[2])) {  //Benzene reliable read depends on having the temperature and humidity data, so if we skip Temp or Hum read, we also skip Benzene.
-    sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 5); 
-    checkCritical(4); 
+    /*sensorsValues[4] = String(readBenzene(DHTValues[0],DHTValues[1]), 1); 
+    checkCritical(4); */
   }
 
   if(sensorsActiveFlags[5]){
-    sensorsValues[5] = String(readAmmoniaca(), 2);
+    sensorsValues[5] = String(readAmmoniaca(), 1);
     checkCritical(5);
   }
   
   if(sensorsActiveFlags[6]){
-    sensorsValues[6] = String(readAldeidi(), 2); 
+    sensorsValues[6] = String(readAldeidi(), 1); 
     checkCritical(6);
   }
 
@@ -145,20 +145,31 @@ String read_data_from_sensor()
     GPSValues[1] = getValue(statoGPS, '|', 1);
   }
 
+  if(battery <= 0){
+    battery = 0;
+    timetosend = 0;
+    timetoreceive = 0;
+    Serial.println("Battery = 0, Arduino turned off...");
+  }
+
   String msg = sensorsValues[0] + '|' + sensorsValues[1] + "|" +  sensorsValues[2] + "|" + sensorsValues[3] + "|" +  sensorsValues[4] + "|" +  sensorsValues[5] + "|" +  sensorsValues[6] + "|" + GPSValues[0] + "|" + GPSValues[1] + "|" + battery;
-  //battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
-  //battery = battery - (random(1000, 2000) / 100.0); // randomizza lo scaricamento tra float -10 e -20
-  battery = 45;
+  //battery = 45;
   resetValues();
   return msg;
 }
 
 
 int send_data_to_gateway(String msg)
-{
-  modem.beginPacket();
-  modem.print(msg);
-  return modem.endPacket(true);
+{ 
+  if(battery > 0){
+    battery = battery - (((((double) rand() / (RAND_MAX)))+1)*0.25); //randomizza lo scaricamento tra -0.25 e -0.5
+    //battery = battery - (random(100, 500) / 100.0); 
+    modem.beginPacket();
+    modem.print(msg);
+    return modem.endPacket(true);
+  }else{
+    return 0;
+  }
 }
 
 
@@ -174,14 +185,10 @@ String exchange_data_with_gateway()
   if (!modem.available()) //if there is no available data, return an empty string. 
   {
     Serial.print("No downlink message available at the moment...");
-    Serial.print(" time to send: ");
-    Serial.print(timetosend);
-    Serial.print(" - time to receive: ");
-    Serial.println(timetoreceive);
     return "";
   }
   //if some data is available...
-  char rcv[64];
+  char rcv[55];
   int i = 0;
   while (modem.available()) 
   {

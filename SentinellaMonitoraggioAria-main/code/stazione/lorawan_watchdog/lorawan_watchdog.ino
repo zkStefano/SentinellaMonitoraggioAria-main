@@ -91,7 +91,7 @@ void loop() { //read data from sensors --> msg --> conf-data
   currentMillis = millis(); // Assigning millis() value to variable 
   
   /* UPLINK DATA - PHASE 1 : READ FROM SENSORS */
-  if( (unsigned long)(currentMillis-previousMillisS) >= timetosend )
+  if( (unsigned long)(currentMillis-previousMillisS) >= timetosend && timetosend > 0)
   {
     Serial.println();
     Serial.println("----------------- CYCLE : " + String(cycle) + " -----------------" );
@@ -100,6 +100,10 @@ void loop() { //read data from sensors --> msg --> conf-data
     //See Cycle time
     //Serial.print("Total reading time at cycle " + String(cycle) + " : " );
     //Serial.println((currentMillis-previousMillisS));
+    Serial.print("time to send: ");
+    Serial.print(timetosend);
+    Serial.print(" - time to receive: ");
+    Serial.println(timetoreceive);
     cycle++; 
     
    /* UPLINK DATA - PHASE 2 : SEND DATA TO GATEWAY */
@@ -148,7 +152,7 @@ void loop() { //read data from sensors --> msg --> conf-data
   }
   
   /* DOWNLINK DATA */
-  if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive ) { 
+  if( (unsigned long)(currentMillis-previousMillisR) >= timetoreceive && timetoreceive > 0 ) { 
    
     conf_data = exchange_data_with_gateway(); //See if there is a downlink msg available
     if(conf_data != "") // if conf_data is not empty

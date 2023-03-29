@@ -43,7 +43,7 @@ String readGPS(){
         Serial.println(gps.location.lng(), 6);
         lat = gps.location.lat();
         lon = gps.location.lng();
-        combine = String(lat) + " | ";
+        combine = String(lat) + "|";
         combine = combine + String(lon);
         return combine;
        }

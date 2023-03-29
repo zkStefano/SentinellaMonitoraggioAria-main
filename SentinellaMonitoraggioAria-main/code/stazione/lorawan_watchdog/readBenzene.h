@@ -93,7 +93,7 @@ float readBenzene(float Temp, float Hum){
   Serial.println("correctedPPM is: " + String(correctedPPM));
   
   delay(2000);
-  return correctedPPM; //use correctedPPM then
+  return correctedPPM*1000; //use correctedPPM then
 }
 
 
